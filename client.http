@@ -1,0 +1,7 @@
+POST https://fakhrul.azurewebsites.net/loginOwner
+Content-Type: application/json
+
+{
+  "idNumber": "20223112",
+  "password": "12345"
+}

@@ -23,7 +23,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 //mongoDB
 const { MongoClient} = require("mongodb");
-const uri = "mongodb+srv://fakhrul:1235@clusterfakhrul.bigkwnk.mongodb.net/"
+const uri = "mongodb+srv://fakhrul:1235@clusterfakhrul.bigkwnk.mongodb.net/?retryWrites=true&w=majority"
 const  client = new MongoClient(uri)
 
 //bcrypt
@@ -74,6 +74,7 @@ app.post( '/loginOwner',async function (req, res) {
   hashed = await bcrypt.hash(password, salt)
   await loginOwner(idNumber, hashed)
 })
+
 
 //login as Security
 /**
