@@ -418,43 +418,6 @@ app.post('/createpassVisitor', async function(req, res){
   }
 });
 
-
-
-//change pass number
-/**
- * @swagger
- * /changePassNumber:
- *   post:
- *     summary: Change pass number
- *     description: Change pass number for a user
- *     tags: [Host, Security]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               savedidNumber:
- *                 type: string
- *               newpassNumber:
- *                 type: string
- *     responses:
- *       '200':
- *         description: Pass number changed successfully
- *       '401':
- *         description: Unauthorized - Invalid or missing token
- *       '500':
- *         description: Internal Server Error
- */
-app.post('/changePassNumber', async function (req, res){
-  const {savedidNumber, newpassNumber} = req.body
-  await changePassNumber(savedidNumber, newpassNumber)
-  res.send(req.body)
-})
-
 //delete visitor
 /**
  * @swagger
@@ -846,17 +809,6 @@ async function manageRole(idNumber, role){
   }
 }
 
-//UPDATE(change pass number)
-async function changePassNumber(savedidNumber, newpassNumber){
-  await client.connect()
-  const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: savedidNumber})
-  if(exist){
-    await client.db("assignmentCondo").collection("visitor").updateOne({idNumber: savedidNumber}, {$set: {passNumber: newpassNumber}})
-    console.log("Visitor's pass number has changed successfuly.")
-  }else{
-    console.log("The visitor does not exist.")
-  }
-}
 
 //DELETE(delete visitor)
 async function deleteVisitor(oldname, oldidNumber){
