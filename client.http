@@ -5,3 +5,12 @@ Content-Type: application/json
   "idNumber": "20223112",
   "password": "12345"
 }
+
+###
+### POST Request to viewVisitor Endpoint
+###
+
+POST http://localhost:3000/viewVisitor
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
