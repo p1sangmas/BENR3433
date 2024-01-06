@@ -555,24 +555,46 @@ app.post('/retrievePhoneNumber', async function (req, res){
   }
 });
 
-//manage host role
+// Manage User Role
 /**
  * @swagger
  * /manageRole:
  *   post:
- *     summary: Manage host role
- *     description: Manage host role
+ *     summary: Manage user role
+ *     description: Manage the role of a user by updating the role associated with the provided ID number (accessible to administrators).
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               idNumber:
+ *                 type: string
+ *               role:
+ *                 type: string
  *     responses:
  *       '200':
- *         description: Role managed successfully
+ *         description: Role managed successfully.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               example: Role managed successfully!
  *       '401':
- *         description: Unauthorized - Invalid or missing token
+ *         description: Unauthorized - Invalid or missing token.
+ *       '403':
+ *         description: Forbidden - User does not have the necessary permissions.
+ *       '404':
+ *         description: Username with the provided ID number does not exist in the database.
  *       '500':
- *         description: Internal Server Error
+ *         description: Internal server error occurred.
  */
+
 app.post('/manageRole', async function (req, res){
   var token = req.header('Authorization').split(" ")[1];
   let decoded;
