@@ -222,25 +222,32 @@ app.post('/registerOwner', async function (req, res){
 /**
  * @swagger
  * /viewVisitor:
- *   get:
- *     summary: View list of visitors
- *     description: Retrieve a list of visitors (accessible to owners and security personnel)
- *     tags: [Owner, Security, Visitor]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       '200':
- *         description: List of visitors retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *       '401':
- *         description: Unauthorized - Invalid or missing token
- *       '403':
- *         description: Forbidden - User does not have access to view visitors
+ *   post:
+    summary: "View Visitors"
+      description: "Endpoint to view visitors based on user role and ID"
+      tags:
+        - "Visitors"
+      parameters:
+        - name: "Authorization"
+          in: "header"
+          description: "Bearer token for authentication"
+          required: true
+          type: "string"
+          format: "Bearer {token}"
+      responses:
+        200:
+          description: "Successful retrieval of visitors"
+          schema:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                // Define properties of the visitor object here. 
+                // For example, id, name, dateOfVisit, etc.
+        401:
+          description: "Unauthorized - Invalid token"
+        500:
+          description: "Internal Server Error"
  */
 app.post('/viewVisitor', async function(req, res){
   var token = req.header('Authorization').split(" ")[1];
