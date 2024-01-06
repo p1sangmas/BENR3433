@@ -425,6 +425,26 @@ app.listen(port, () => {
 
 //////////FUNCTION//////////
 
+async function logs(idNumber, name, role){
+  // Get the current date and time
+  const currentDate = new Date();
+
+  // Format the date
+  const formattedDate = currentDate.toLocaleDateString(); // Format: MM/DD/YYYY
+
+  // Format the time
+  const formattedTime = currentDate.toLocaleTimeString(); // Format: HH:MM:SS
+  await client.connect()
+  client.db("VMS").collection("Logs").insertOne({
+      idNumber: idNumber,
+      name: name,
+      Type: role,
+      date: formattedDate,
+      entry_time: formattedTime,
+      exit_time: "pending"
+  })
+}
+
 //CREATE(createListing for owner)
 async function createListing1(client, newListing){
   const result = await client.db("assignmentCondo").collection("owner").insertOne(newListing);
@@ -446,6 +466,7 @@ async function loginVisitor(res, idNumber, password){
       console.log("WELCOME!!");
       token = jwt.sign({idNumber: idNumber, privatekey});
       res.send("Token: "+ token);
+      await logs(idNumber, exist.name, exist.passNumber);
     }
     else{
       console.log("Wrong password");
