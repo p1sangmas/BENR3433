@@ -242,15 +242,17 @@ app.post('/registerOwner', async function (req, res){
  *       '403':
  *         description: Forbidden - User does not have access to view visitors
  */
-app.get('/viewVisitor', async function(req, res){
-  await client.connect()
-  let header = req.headers.authorization;
-  let token = header.split(' ')[1];
-  jwt.verify(token, privatekey);
-    console.log(decoded.role);
-      res.send(await viewVisitor(decoded.idNumber, decoded.role));
-  }
-);
+app.post('/viewVisitor', async function(req, res){
+  var token = req.header('Authorization').split(" ")[1];
+  try {
+      var decoded = jwt.verify(token, privatekey);
+      console.log(decoded.role);
+      res.send(await viewVisitors(decoded.idNumber, decoded.role));
+    } catch(err) {
+      res.send("Error!");
+    }
+});
+
 
 //register visitor
 /**
