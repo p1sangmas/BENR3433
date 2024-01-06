@@ -352,20 +352,33 @@ app.post('/viewVisitor', async function(req, res){
  */
 app.post('/createpassVisitor', async function(req, res){
   var token = req.header('Authorization').split(" ")[1];
+  let decoded;
+
   try {
-      var decoded = jwt.verify(token, privatekey);
+      decoded = jwt.verify(token, privatekey);
       console.log(decoded.role);
-    } catch(err) {
-      console.log("Error!");
-    }
-  console.log(decoded);
-  if (await decoded.role == "Host" || await decoded.role == "security"){
-      const {role, name, idNumber, documentType, gender, birthDate, age, documentExpiry, company, TelephoneNumber, vehicleNumber, category, ethnicity, photoAttributes, passNumber, password} = req.body;
-      await createpassVisitor(role, name, idNumber, documentType, gender, birthDate, age, documentExpiry, company, TelephoneNumber, vehicleNumber, category, ethnicity, photoAttributes, passNumber, password);
-  }else{
+  } catch(err) {
+      console.log("Error decoding token:", err.message);
+      return res.status(401).send("Unauthorized"); // Send a 401 Unauthorized response
+  }
+
+  if (decoded && (decoded.role === "Host" || decoded.role === "security")){
+      const {
+          role, name, idNumber, documentType, gender, birthDate, age, 
+          documentExpiry, company, TelephoneNumber, vehicleNumber, 
+          category, ethnicity, photoAttributes, passNumber, password
+      } = req.body;
+
+      await createpassVisitor(role, name, idNumber, documentType, gender, birthDate, 
+                              age, documentExpiry, company, TelephoneNumber, 
+                              vehicleNumber, category, ethnicity, photoAttributes, 
+                              passNumber, password);
+  } else {
       console.log("Access Denied!");
+      res.status(403).send("Access Denied"); // Send a 403 Forbidden response
   }
 });
+
 
 
 //change pass number
@@ -593,7 +606,7 @@ async function registerHost(newrole, newname, newidNumber, newemail, newpassword
 //CREATE(register Visitor)
 async function createpassVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate, 
                         newage, newdocumentExpiry, newcompany, newTelephoneNumber, newvehicleNumber,
-                        newcategory, newethnicity, newphotoAttributes, newpassNumber){
+                        newcategory, newethnicity, newphotoAttributes, newpassNumber, password){
   //TODO: Check if username exist
   await client.connect()
   const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: newidNumber})
@@ -617,7 +630,8 @@ async function createpassVisitor(newrole, newname, newidNumber, newdocumentType,
           category: newcategory,
           ethnicity: newethnicity,
           photoAttributes: newphotoAttributes,
-          passNumber: newpassNumber 
+          passNumber: newpassNumber,
+          password: hashed 
         }
       );
       console.log("Registered successfully!")

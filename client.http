@@ -1,4 +1,4 @@
-POST https://fakhrul.azurewebsites.net/loginOwner
+POST https://fakhrul.azurewebsites.net/loginHost
 Content-Type: application/json
 
 {
@@ -30,6 +30,51 @@ POST http://localhost:3000/loginAdmin
 Content-Type: application/json
 
 {
-  "idNumber": "20223117",
-  "password": "6789"
+  "idNumber": "20223119",
+  "password": "67890"
+}
+
+###
+
+POST http://localhost:3000/loginSecurity
+Content-Type: application/json
+
+{
+  "idNumber": "20223113",
+  "password": "12345"
+}
+
+###
+
+POST http://localhost:3000/loginHost
+Content-Type: application/json
+
+{
+  "idNumber": "20223112",
+  "password": "12345"
+}
+
+###
+
+POST http://localhost:3000/createpassVisitor
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEyIiwicm9sZSI6Ikhvc3QiLCJpYXQiOjE3MDQ1NDc2MzR9.vPG2nIoI7jspjEkPOxADJLS1ga26ZK8YvqYHAeWR5hc
+
+{
+  "role": "Host or security",
+  "name": "Visitor Name",
+  "idNumber": "Visitor ID",
+  "documentType": "Type",
+  "gender": "Gender",
+  "birthDate": "YYYY-MM-DD",
+  "age": "Age",
+  "documentExpiry": "YYYY-MM-DD",
+  "company": "Company Name",
+  "TelephoneNumber": "Phone Number",
+  "vehicleNumber": "Vehicle Number",
+  "category": "Category",
+  "ethnicity": "Ethnicity",
+  "photoAttributes": "Photo Attributes",
+  "passNumber": "Pass Number",
+  "password": "Password"
 }
