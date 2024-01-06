@@ -555,6 +555,50 @@ app.post('/retrievePhoneNumber', async function (req, res){
   }
 });
 
+//manage host role
+/**
+ * @swagger
+ * /manageRole:
+ *   post:
+ *     summary: Manage host role
+ *     description: Manage host role
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Role managed successfully
+ *       '401':
+ *         description: Unauthorized - Invalid or missing token
+ *       '500':
+ *         description: Internal Server Error
+ */
+app.post('/manageRole', async function (req, res){
+  var token = req.header('Authorization').split(" ")[1];
+  let decoded;
+
+  try {
+    decoded = jwt.verify(token, privatekey);
+  } catch(err) {
+    console.log("Error decoding token:", err.message);
+    return res.status(401).send("Unauthorized");
+  }
+
+  if (decoded && (decoded.role === "admin")){
+    const { idNumber, role } = req.body;
+
+    try {
+      await manageRole(idNumber, role);
+      res.status(200).send("Role managed successfully!");
+    } catch (error) {
+      console.log(error.message);
+      res.status(404).send(error.message);
+    }
+  } else {
+    console.log("Access Denied!");
+    res.status(403).send("Access Denied");
+  }
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
@@ -759,7 +803,7 @@ async function createpassVisitor(newrole, newname, newidNumber, newdocumentType,
 //READ(retrieve phone number for visitor)
 async function retrievePhoneNumber(idNumber){
   await client.connect()
-  const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: idNumber})
+  const exist = await client.db("assignmentCondo").collection("host").findOne({idNumber: idNumber})
   
   if(exist){
     // Return the phone number in the response body
@@ -770,6 +814,16 @@ async function retrievePhoneNumber(idNumber){
   }
 }
 
+async function manageRole(idNumber, role){
+  await client.connect()
+  const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: idNumber})
+  if(exist){
+    await client.db("assignmentCondo").collection("owner").updateOne({idNumber: idNumber}, {$set: {role: role}})
+    console.log("Role managed successfully!")
+  }else{
+    console.log("Username not exist!")
+  }
+}
 
 //UPDATE(change pass number)
 async function changePassNumber(savedidNumber, newpassNumber){

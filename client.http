@@ -109,3 +109,14 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwM
 {
   "idNumber": "987654321"
 }
+
+###
+
+POST http://localhost:3000/manageRole
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTE5Iiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzA0NTU1NTAzfQ.9qK3vocFS68JRntEBQJ0z6mHp4lZ3PbZkW8BRkLb868
+
+{
+  "idNumber": "345657890",
+  "role": "security"
+}
