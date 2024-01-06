@@ -113,7 +113,7 @@ app.post('/loginVisitor', async function(req, res){
  *       '401':
  *         description: Unauthorized - Invalid credentials
  */
-app.post( '/loginOwner',async function (req, res) {
+app.post( '/owner/loginOwner',async function (req, res) {
   let {idNumber, password} = req.body;
   const hashed = await generateHash(password);
   await loginOwner(res, idNumber, hashed)
