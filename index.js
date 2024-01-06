@@ -218,36 +218,33 @@ app.post('/registerOwner', async function (req, res){
 
 
 
-//view visitor 
+//View Visitor
 /**
  * @swagger
  * /viewVisitor:
  *   post:
-    summary: "View Visitors"
-      description: "Endpoint to view visitors based on user role and ID"
-      tags:
-        - "Visitors"
-      parameters:
-        - name: "Authorization"
-          in: "header"
-          description: "Bearer token for authentication"
-          required: true
-          type: "string"
-          format: "Bearer {token}"
-      responses:
-        200:
-          description: "Successful retrieval of visitors"
-          schema:
-            type: "array"
-            items:
-              type: "object"
-              properties:
-                // Define properties of the visitor object here. 
-                // For example, id, name, dateOfVisit, etc.
-        401:
-          description: "Unauthorized - Invalid token"
-        500:
-          description: "Internal Server Error"
+ *     summary: "View visitors"
+ *     description: "Retrieve visitors based on user role"
+ *     tags:
+ *       - Owner & Security
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: "Visitors retrieved successfully"
+ *       '400':
+ *         description: "Invalid token or error in retrieving visitors"
+ *       '401':
+ *         description: "Unauthorized - Invalid token or insufficient permissions"
+ *     consumes:
+ *       - "application/json"
+ *     produces:
+ *       - "application/json"
+ *   securityDefinitions:
+ *     JWT:
+ *       type: "apiKey"
+ *       name: "Authorization"
+ *       in: "header"
  */
 app.post('/viewVisitor', async function(req, res){
   var token = req.header('Authorization').split(" ")[1];
