@@ -460,21 +460,20 @@ async function createListing2(client, newListing){
 //READ(login as visitor)
 async function loginVisitor(res, idNumber, password){
   await client.connect();
-  const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: idNumber});
-  if(exist){
-    if(bcrypt.compare(password, await exist.password)){
-      console.log("WELCOME!!");
-      token = jwt.sign({idNumber: idNumber, privatekey});
-      res.send("Token: "+ token);
-      await logs(idNumber, exist.name, exist.passNumber);
+    const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: idNumber});
+    if(exist){
+        if(bcrypt.compare(password,await exist.password)){
+        console.log("Welcome!");
+        token = jwt.sign({ idNumber: Identification_No, role: exist.role}, privatekey);
+        res.send("Token: "+ token);
+        //Masukkan logs
+        await logs(id, exist.name, exist.role);
+        }else{
+            console.log("Wrong password!")
+        }
+    }else{
+        console.log("Visitor not registered!");
     }
-    else{
-      console.log("Wrong password");
-    }
-  }
-  else{
-    console.log("Visitor is not exist/registered");
-  }
 }
 
 //READ(view all visitors)
