@@ -113,7 +113,7 @@ app.post('/loginVisitor', async function(req, res){
  *       '401':
  *         description: Unauthorized - Invalid credentials
  */
-app.post( '/owner/loginOwner',async function (req, res) {
+app.post( '/loginOwner',async function (req, res) {
   let {idNumber, password} = req.body;
   const hashed = await generateHash(password);
   await loginOwner(res, idNumber, hashed)
@@ -493,25 +493,20 @@ async function viewVisitor(idNumber, role){
 //READ(login as Owner)
 async function loginOwner(res, idNumber, hashed){
   await client.connect()
-  const result = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: idNumber });
-  const role = await result.role
-  if (result) {
-    //BCRYPT verify password
-    bcrypt.compare(result.password, hashed, function(err, result){
-      if(result == true){
-        console.log("Access granted. Welcome");
-        console.log("Password:", hashed);
-        console.log("Role:", role);
-        const token = jwt.sign({idNumber: idNumber, role: role}, privatekey);
-        res.send("Token: ", token);
-      }else{
-        console.log("Wrong password");
-      }
-    });
-  } 
-  else {
-      console.log("Owner not registered");
-  }
+  const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: idNumber });
+    if (exist) {
+        const passwordMatch = await bcrypt.compare(exist.password, hashed);
+        if (passwordMatch) {
+            console.log("Login Success!\nRole: "+ exist.role);
+            logs(idNumber, exist.name, exist.role);
+            const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
+            res.send("Token: " + token);
+        } else {
+            console.log("Wrong password!");
+        }
+    } else {
+        console.log("Username not exist!");
+    }
 }
 
 //READ(login as Security)
