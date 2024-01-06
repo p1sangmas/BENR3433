@@ -24,3 +24,12 @@ Content-Type: application/json
   "password": "qwerty"
 }
 
+###
+
+POST http://localhost:3000/loginAdmin
+Content-Type: application/json
+
+{
+  "idNumber": "20223117",
+  "password": "6789"
+}

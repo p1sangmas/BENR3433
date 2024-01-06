@@ -350,7 +350,7 @@ app.post('/viewVisitor', async function(req, res){
  *       '403':
  *         description: Forbidden - User does not have access to register a visitor
  */
-app.post('/registerVisitor', async function (req, res) {
+app.post('/createpassVisitor', async function (req, res) {
   let header = req.headers.authorization;
   let token = header.split(' ')[1];
   
@@ -366,7 +366,7 @@ app.post('/registerVisitor', async function (req, res) {
       const data = req.body;
       
       res.send(
-        registerVisitor(
+        createpassVisitor(
           data.role,
           data.name,
           data.idNumber,
@@ -556,7 +556,7 @@ async function loginHost(res, idNumber, hashed){
 }
 
 //READ(login as Security)
-async function loginSecurity(idNumber, hashed){
+async function loginSecurity(res, idNumber, hashed){
   await client.connect()
   const exist = await client.db("assignmentCondo").collection("security").findOne({ idNumber: idNumber });
     if (exist) {
@@ -575,7 +575,7 @@ async function loginSecurity(idNumber, hashed){
 }
 
 //READ(login as Admin)
-async function loginAdmin(idNumber, hashed){
+async function loginAdmin(res,idNumber, hashed){
   await client.connect()
   const exist = await client.db("assignmentCondo").collection("admin").findOne({ idNumber: idNumber });
     if (exist) {
@@ -615,7 +615,7 @@ async function registerHost(newrole, newname, newidNumber, newemail, newpassword
 }
 
 //CREATE(register Visitor)
-async function registerVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate, 
+async function createpassVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate, 
                         newage, newdocumentExpiry, newcompany, newTelephoneNumber, newvehicleNumber,
                         newcategory, newethnicity, newphotoAttributes, newpassNumber){
   //TODO: Check if username exist
