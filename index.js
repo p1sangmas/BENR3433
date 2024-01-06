@@ -298,11 +298,11 @@ app.post('/viewVisitor', async function(req, res){
 //register visitor
 /**
  * @swagger
- * /registerVisitor:
+ * /createpassVisitor:
  *   post:
- *     summary: Register a visitor
- *     description: Register a new visitor (accessible to Hosts and security personnel)
- *     tags: [Host]
+ *     summary: Create a visitor pass
+ *     description: Create a new visitor pass (accessible to Hosts and security personnel)
+ *     tags: [Host, Security]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
