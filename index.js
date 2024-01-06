@@ -610,7 +610,7 @@ async function createpassVisitor(newrole, newname, newidNumber, newdocumentType,
   //TODO: Check if username exist
   await client.connect()
   const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: newidNumber})
-  hashed = await bcrypt.hash(password, 10);
+  //hashed = await bcrypt.hash(password, 10);
   if(exist){
       console.log("Visitor has already registered")
   }else{
@@ -631,7 +631,7 @@ async function createpassVisitor(newrole, newname, newidNumber, newdocumentType,
           ethnicity: newethnicity,
           photoAttributes: newphotoAttributes,
           passNumber: newpassNumber,
-          password: hashed 
+          password: password 
         }
       );
       console.log("Registered successfully!")

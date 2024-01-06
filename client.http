@@ -78,3 +78,19 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwM
   "passNumber": "Pass Number",
   "password": "Password"
 }
+
+###
+
+POST http://localhost:3000/registerHost
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEzIiwicm9sZSI6InNlY3VyaXR5IiwiaWF0IjoxNzA0NTQ4MDk2fQ.9z86tA_YIRnTanX4C9lm5HfbakJDZhGyGqMOVZ6y0r4
+
+{
+  "role": "Host",
+  "name": "Zaid",
+  "idNumber": "98765",
+  "email": "zaid@email.com",
+  "password": "zaid123",
+  "phoneNumber": "0168219343"
+}
+
