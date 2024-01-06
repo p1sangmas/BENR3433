@@ -163,7 +163,6 @@ app.post( '/loginSecurity',async function (req, res) {
  *   post:
  *     summary: Authenticate administrator personnel
  *     description: Login with identification number and password
- *     tags: [Admin]
  *     requestBody:
  *       required: true
  *       content:
@@ -186,6 +185,7 @@ app.post( '/loginSecurity',async function (req, res) {
  *         description: Invalid request body
  *       '401':
  *         description: Unauthorized - Invalid credentials
+ *     tags: [Admin]
  */
 app.post( '/loginAdmin',async function (req, res) {
   let {idNumber, password} = req.body
@@ -301,7 +301,6 @@ app.post('/viewVisitor', async function(req, res){
  *   post:
  *     summary: "View hosts"
  *     description: "Retrieve hosts based on user role"
- *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -320,6 +319,7 @@ app.post('/viewVisitor', async function(req, res){
  *       type: "apiKey"
  *       name: "Authorization"
  *       in: "header"
+ *     tags: [Admin]
  */
 app.post('/viewHost', async function(req, res){
   var token = req.header('Authorization').split(" ")[1];
