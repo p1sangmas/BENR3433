@@ -98,5 +98,5 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwM
 
 POST http://localhost:3000/viewHost
 Content-Type: application/json
-Authorization: Bearer your-jwt-token
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTE5Iiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzA0NTUwNDg2fQ.kD7E7Wf33BQyN_omJEzVg9a5tPXy_0cFmJcDEYnXR1Q
 

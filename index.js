@@ -507,7 +507,7 @@ async function logs(idNumber, name, role){
   // Format the time
   const formattedTime = currentDate.toLocaleTimeString(); // Format: HH:MM:SS
   await client.connect()
-  client.db("VMS").collection("Logs").insertOne({
+  client.db("assignmentCondo").collection("logs").insertOne({
       idNumber: idNumber,
       name: name,
       Type: role,
