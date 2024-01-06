@@ -254,7 +254,7 @@ app.post('/viewVisitor', async function(req, res){
   try {
       var decoded = jwt.verify(token, privatekey);
       console.log(decoded.role);
-      res.send(await viewVisitors(decoded.idNumber, decoded.role));
+      res.send(await viewVisitor(decoded.idNumber, decoded.role));
     } catch(err) {
       res.send("Error!");
     }
