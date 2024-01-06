@@ -495,8 +495,8 @@ app.post('/deleteVisitor', async function (req, res){
  * @swagger
  * /retrievePhoneNumber:
  *   post:
- *     summary: Retrieve phone number based on security authentication
- *     description: Retrieve phone number by providing the ID number if the role is security
+ *     summary: Retrieve host phone number
+ *     description: Retrieve the phone number of a host based on the provided ID number (accessible to security personnel).
  *     tags: [Security]
  *     security:
  *       - bearerAuth: []
@@ -511,11 +511,20 @@ app.post('/deleteVisitor', async function (req, res){
  *                 type: string
  *     responses:
  *       '200':
- *         description: Successfully retrieved the phone number
+ *         description: Successfully retrieved the host's phone number.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             phoneNumber:
+ *               type: string
  *       '401':
- *         description: Unauthorized - Invalid or missing token
+ *         description: Unauthorized - Invalid or expired token.
  *       '403':
- *         description: Forbidden - Access denied due to role mismatch
+ *         description: Forbidden - User does not have the necessary permissions.
+ *       '404':
+ *         description: Visitor with the provided ID number does not exist in the database.
+ *       '500':
+ *         description: Internal server error occurred.
  */
 app.post('/retrievePhoneNumber', async function (req, res){
   var token = req.header('Authorization').split(" ")[1];
@@ -751,7 +760,7 @@ async function retrievePhoneNumber(idNumber){
 }
 
 //UPDATE(change pass number)
-async function changePhoneNumber(savedidNumber, newpassNumber){
+async function changePassNumber(savedidNumber, newpassNumber){
   await client.connect()
   const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: savedidNumber})
   if(exist){

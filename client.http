@@ -100,3 +100,12 @@ POST http://localhost:3000/viewHost
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTE5Iiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzA0NTUwNDg2fQ.kD7E7Wf33BQyN_omJEzVg9a5tPXy_0cFmJcDEYnXR1Q
 
+###
+
+POST http://localhost:3000/retrievePhoneNumber
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEzIiwicm9sZSI6InNlY3VyaXR5IiwiaWF0IjoxNzA0NTUzMDI0fQ.u-TDvcce6emXUOGCnHieQMc3sV3tOfwmyxH-hUiNKyU
+
+{
+  "idNumber": "987654321"
+}
