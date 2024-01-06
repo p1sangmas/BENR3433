@@ -301,6 +301,7 @@ app.post('/viewVisitor', async function(req, res){
  *   post:
  *     summary: "View hosts"
  *     description: "Retrieve hosts based on user role"
+ *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -319,7 +320,6 @@ app.post('/viewVisitor', async function(req, res){
  *       type: "apiKey"
  *       name: "Authorization"
  *       in: "header"
- *     tags: [Admin]
  */
 app.post('/viewHost', async function(req, res){
   var token = req.header('Authorization').split(" ")[1];
@@ -451,7 +451,7 @@ app.post('/createpassVisitor', async function(req, res){
  */
 app.post('/changePassNumber', async function (req, res){
   const {savedidNumber, newpassNumber} = req.body
-  await changePhoneNumber(savedidNumber, newpassNumber)
+  await changePassNumber(savedidNumber, newpassNumber)
   res.send(req.body)
 })
 
@@ -489,6 +489,55 @@ app.post('/deleteVisitor', async function (req, res){
   await deleteVisitor(name, idNumber)
   res.send(req.body)
 })
+
+// Retrieve Phone Number
+/**
+ * @swagger
+ * /retrievePhoneNumber:
+ *   post:
+ *     summary: Retrieve phone number based on security authentication
+ *     description: Retrieve phone number by providing the ID number if the role is security
+ *     tags: [Security]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               idNumber:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Successfully retrieved the phone number
+ *       '401':
+ *         description: Unauthorized - Invalid or missing token
+ *       '403':
+ *         description: Forbidden - Access denied due to role mismatch
+ */
+app.post('/retrievePhoneNumber', async function (req, res){
+  var token = req.header('Authorization').split(" ")[1];
+  let decoded;
+  try {
+    decoded = jwt.verify(token, privatekey);
+    console.log(decoded.role);
+  } catch(err) {
+    console.log("Error decoding token:", err.message);
+    return res.status(401).send("Unauthorized"); // Send a 401 Unauthorized response
+  }
+  if (decoded && (decoded.role === "security")){
+    const {idNumber} = req.body
+    await retrievePhoneNumber(idNumber)
+    res.send(req.body)
+  }
+  else{
+    console.log("Access Denied!");
+    res.status(403).send("Access Denied"); // Send a 403 Forbidden response
+  }
+})
+
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
@@ -689,6 +738,17 @@ async function createpassVisitor(newrole, newname, newidNumber, newdocumentType,
       console.log("Registered successfully!")
   }
 } 
+
+//READ(retrieve phone number for visitor)
+async function retrievePhoneNumber(idNumber){
+  await client.connect()
+  const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: idNumber})
+  if(exist){
+    console.log("Phone number: " + exist.TelephoneNumber)
+  }else{
+    console.log("Visitor does not exist.")
+  }
+}
 
 //UPDATE(change pass number)
 async function changePhoneNumber(savedidNumber, newpassNumber){
