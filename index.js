@@ -46,13 +46,13 @@ var checkpassword;
 
 app.use(express.json());
 
-//login as Visitor
+//retrieve Visitor info
 /**
  * @swagger
- * /loginVisitor:
+ * /retrieveVisitor:
  *   post:
  *     summary: Authenticate visitor
- *     description: Login with identification number and password for a visitor
+ *     description: Login with identification number and password for a visitor to view pass
  *     tags: [Visitor]
  *     requestBody:
  *       required: true
@@ -77,19 +77,19 @@ app.use(express.json());
  *       '401':
  *         description: Unauthorized - Invalid credentials
  */
-app.post('/loginVisitor', async function(req, res){
+app.post('/retrieveVisitor', async function(req, res){
   const {idNumber, password} = req.body;
-  loginVisitor(res, idNumber , password);
+  retrieveVisitor(res, idNumber , password);
 });
 
-//login as Owner
+//login as Host
 /**
  * @swagger
- * /loginOwner:
+ * /loginHost:
  *   post:
- *     summary: Authenticate owner
+ *     summary: Authenticate Host
  *     description: Login with identification number and password
- *     tags: [Owner]
+ *     tags: [Host]
  *     requestBody:
  *       required: true
  *       content:
@@ -113,10 +113,10 @@ app.post('/loginVisitor', async function(req, res){
  *       '401':
  *         description: Unauthorized - Invalid credentials
  */
-app.post( '/loginOwner',async function (req, res) {
+app.post( '/loginHost',async function (req, res) {
   let {idNumber, password} = req.body;
   const hashed = await generateHash(password);
-  await loginOwner(res, idNumber, hashed)
+  await loginHost(res, idNumber, hashed)
 })
 
 //login as Security
@@ -156,14 +156,14 @@ app.post( '/loginSecurity',async function (req, res) {
   await loginSecurity(res, idNumber, hashed)
 })
 
-//register Owner
+//register Host
 /**
  * @swagger
- * /registerOwner:
+ * /registerHost:
  *   post:
- *     summary: Register an owner
- *     description: Register a new owner with security role
- *     tags: [Owner]
+ *     summary: Register an Host
+ *     description: Register a new Host with security role
+ *     tags: [Host]
  *     requestBody:
  *       required: true
  *       content:
@@ -187,13 +187,13 @@ app.post( '/loginSecurity',async function (req, res) {
  *       - bearerAuth: []
  *     responses:
  *       '200':
- *         description: Owner registered successfully
+ *         description: Host registered successfully
  *       '401':
  *         description: Unauthorized - Invalid or missing token
  *       '403':
- *         description: Forbidden - User does not have access to register an owner
+ *         description: Forbidden - User does not have access to register an Host
  */
-app.post('/registerOwner', async function (req, res){
+app.post('/registerHost', async function (req, res){
   let header = req.headers.authorization;
   let token = header.split(' ')[1];
   jwt.verify(token, privatekey, async function(err, decoded) {
@@ -201,7 +201,7 @@ app.post('/registerOwner', async function (req, res){
     if (await decoded.role == "security"){
       const data = req.body
       res.send(
-        registerOwner(
+        registerHost(
           data.role,
           data.name,
           data.idNumber,
@@ -211,7 +211,7 @@ app.post('/registerOwner', async function (req, res){
         )
       )
     }else{
-      console.log("You have no access to register an owner!")
+      console.log("You have no access to register an Host!")
     }
 })
 })
@@ -226,7 +226,7 @@ app.post('/registerOwner', async function (req, res){
  *     summary: "View visitors"
  *     description: "Retrieve visitors based on user role"
  *     tags:
- *       - Owner & Security
+ *       - Host & Security
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -264,8 +264,8 @@ app.post('/viewVisitor', async function(req, res){
  * /registerVisitor:
  *   post:
  *     summary: Register a visitor
- *     description: Register a new visitor (accessible to owners and security personnel)
- *     tags: [Owner]
+ *     description: Register a new visitor (accessible to Hosts and security personnel)
+ *     tags: [Host]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -325,7 +325,7 @@ app.post('/registerVisitor', async function (req, res) {
     
     console.log(decoded);
     
-    if (decoded && (decoded.role === "owner" || decoded.role === "security")) {
+    if (decoded && (decoded.role === "Host" || decoded.role === "security")) {
       const data = req.body;
       
       res.send(
@@ -362,7 +362,7 @@ app.post('/registerVisitor', async function (req, res) {
  *   post:
  *     summary: Change pass number
  *     description: Change pass number for a user
- *     tags: [Owner, Security]
+ *     tags: [Host, Security]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -397,7 +397,7 @@ app.post('/changePassNumber', async function (req, res){
  *   post:
  *     summary: Delete a visitor
  *     description: Delete a visitor by name and ID number
- *     tags: [Owner]
+ *     tags: [Host]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -451,7 +451,7 @@ async function logs(idNumber, name, role){
   })
 }
 
-//CREATE(createListing for owner)
+//CREATE(createListing for Host)
 async function createListing1(client, newListing){
   const result = await client.db("assignmentCondo").collection("owner").insertOne(newListing);
   console.log(`New listing created with the following id: ${result.insertedId}`);
@@ -463,22 +463,26 @@ async function createListing2(client, newListing){
   console.log(`New listing created with the following id: ${result.insertedId}`);
 }
 
-//READ(login as visitor)
-async function loginVisitor(res, idNumber, password){
+//READ(retrieve pass as visitor)
+async function retrieveVisitor(res, idNumber, password){
   await client.connect();
     const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: idNumber});
     if(exist){
         if(bcrypt.compare(password,await exist.password)){
         console.log("Welcome!");
         token = jwt.sign({ idNumber: idNumber, role: exist.role}, privatekey);
-        res.send("Token: "+ token);
-        //Masukkan logs
+        res.send({
+          "Token": token,
+          "Visitor Info": exist
+        });
+        
+        res.send(exist);
         await logs(id, exist.name, exist.role);
         }else{
             console.log("Wrong password!")
         }
     }else{
-        console.log("Visitor not registered!");
+        console.log("Visitor not exist!");
     }
 }
 
@@ -486,7 +490,7 @@ async function loginVisitor(res, idNumber, password){
 async function viewVisitor(idNumber, role){
   var exist;
   await client.connect();
-  if(role == "owner" || role == "security"){
+  if(role == "Host" || role == "security"){
     exist = await client.db("assignmentCondo").collection("visitor").find({}).toArray();
   }
   else if(role == "visitor"){
@@ -495,8 +499,8 @@ async function viewVisitor(idNumber, role){
   return exist;
 }
 
-//READ(login as Owner)
-async function loginOwner(res, idNumber, hashed){
+//READ(login as Host)
+async function loginHost(res, idNumber, hashed){
   await client.connect()
   const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: idNumber });
     if (exist) {
@@ -538,12 +542,12 @@ async function loginSecurity(idNumber, hashed){
   }
 }
 
-//CREATE(register Owner)
-async function registerOwner(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber){
+//CREATE(register Host)
+async function registerHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber){
   await client.connect()
   const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: newidNumber})
   if(exist){
-    console.log("Owner has already registered")
+    console.log("Host has already registered")
   }else{
     await createListing1(client,
       {
@@ -555,7 +559,7 @@ async function registerOwner(newrole, newname, newidNumber, newemail, newpasswor
         phoneNumber: newphoneNumber
       }
     );
-    console.log("Owner registered sucessfully")
+    console.log("Host registered sucessfully")
   }
 }
 
