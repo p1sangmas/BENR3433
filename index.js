@@ -32,7 +32,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 //mongoDB
 const { MongoClient} = require("mongodb");
-const uri = "mongodb+srv://fakhrul:1235@clusterfakhrul.bigkwnk.mongodb.net/"
+const uri = "mongodb+srv://zikry:J07k2rHmxnU5Y9CM@cluster0.55dttni.mongodb.net/"
 const  client = new MongoClient(uri)
 
 //bcrypt
