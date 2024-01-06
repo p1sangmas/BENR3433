@@ -350,46 +350,22 @@ app.post('/viewVisitor', async function(req, res){
  *       '403':
  *         description: Forbidden - User does not have access to register a visitor
  */
-app.post('/createpassVisitor', async function (req, res) {
-  let header = req.headers.authorization;
-  let token = header.split(' ')[1];
-  
-  jwt.verify(token, privatekey, async function(err, decoded) {
-    if (err) {
-      console.log("Error decoding token:", err);
-      return res.status(401).json({ error: 'Unauthorized' });
+app.post('/createpassVisitor', async function(req, res){
+  var token = req.header('Authorization').split(" ")[1];
+  try {
+      var decoded = jwt.verify(token, privatekey);
+      console.log(decoded.role);
+    } catch(err) {
+      console.log("Error!");
     }
-    
-    console.log(decoded);
-    
-    if (decoded && (decoded.role === "Host" || decoded.role === "security")) {
-      const data = req.body;
-      
-      res.send(
-        createpassVisitor(
-          data.role,
-          data.name,
-          data.idNumber,
-          data.documentType,
-          data.gender,
-          data.birthDate,
-          data.age,
-          data.documentExpiry,
-          data.company,
-          data.TelephoneNumber,
-          data.vehicleNumber,
-          data.category,
-          data.ethnicity,
-          data.photoAttributes,
-          data.passNumber
-        )
-      );
-    } else {
-      console.log("You have no access to register a visitor!");
-    }
-  });
+  console.log(decoded);
+  if (await decoded.role == "Host" || await decoded.role == "security"){
+      const {role, name, idNumber, documentType, gender, birthDate, age, documentExpiry, company, TelephoneNumber, vehicleNumber, category, ethnicity, photoAttributes, passNumber, password} = req.body;
+      await createpassVisitor(role, name, idNumber, documentType, gender, birthDate, age, documentExpiry, company, TelephoneNumber, vehicleNumber, category, ethnicity, photoAttributes, passNumber, password);
+  }else{
+      console.log("Access Denied!");
+  }
 });
-
 
 
 //change pass number
