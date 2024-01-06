@@ -301,8 +301,7 @@ app.post('/viewVisitor', async function(req, res){
  *   post:
  *     summary: "View hosts"
  *     description: "Retrieve hosts based on user role"
- *     tags:
- *       - [Admin]
+ *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
  *     responses:
