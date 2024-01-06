@@ -464,7 +464,7 @@ async function loginVisitor(res, idNumber, password){
     if(exist){
         if(bcrypt.compare(password,await exist.password)){
         console.log("Welcome!");
-        token = jwt.sign({ idNumber: Identification_No, role: exist.role}, privatekey);
+        token = jwt.sign({ idNumber: idNumber, role: exist.role}, privatekey);
         res.send("Token: "+ token);
         //Masukkan logs
         await logs(id, exist.name, exist.role);
