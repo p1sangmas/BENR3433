@@ -594,7 +594,6 @@ app.post('/retrievePhoneNumber', async function (req, res){
  *       '500':
  *         description: Internal server error occurred.
  */
-
 app.post('/manageRole', async function (req, res){
   var token = req.header('Authorization').split(" ")[1];
   let decoded;
