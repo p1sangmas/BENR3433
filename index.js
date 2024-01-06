@@ -294,6 +294,44 @@ app.post('/viewVisitor', async function(req, res){
     }
 });
 
+//View Host
+/**
+ * @swagger
+ * /viewHost:
+ *   post:
+ *     summary: "View hosts"
+ *     description: "Retrieve hosts based on user role"
+ *     tags:
+ *       - [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: "Hosts retrieved successfully"
+ *       '400':
+ *         description: "Invalid token or error in retrieving hosts"
+ *       '401':
+ *         description: "Unauthorized - Invalid token or insufficient permissions"
+ *     consumes:
+ *       - "application/json"
+ *     produces:
+ *       - "application/json"
+ *   securityDefinitions:
+ *     JWT:
+ *       type: "apiKey"
+ *       name: "Authorization"
+ *       in: "header"
+ */
+app.post('/viewHost', async function(req, res){
+  var token = req.header('Authorization').split(" ")[1];
+  try {
+      var decoded = jwt.verify(token, privatekey);
+      console.log(decoded.role);
+      res.send(await viewHost(decoded.idNumber, decoded.role));
+    } catch(err) {
+      res.send("Error!");
+    }
+});
 
 //register visitor
 /**
@@ -523,6 +561,19 @@ async function viewVisitor(idNumber, role){
   }
   else if(role == "visitor"){
     exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: idNumber});
+  }
+  return exist;
+}
+
+//READ(view all visitors)
+async function viewHost(idNumber, role){
+  var exist;
+  await client.connect();
+  if(role == "admin"){
+    exist = await client.db("assignmentCondo").collection("owner").find({}).toArray();
+  }
+  else if(role == "security" || role == "visitor"){
+    console.log("Visitor not exist!");
   }
   return exist;
 }

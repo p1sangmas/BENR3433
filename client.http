@@ -58,7 +58,7 @@ Content-Type: application/json
 
 POST http://localhost:3000/createpassVisitor
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEyIiwicm9sZSI6Ikhvc3QiLCJpYXQiOjE3MDQ1NDc2MzR9.vPG2nIoI7jspjEkPOxADJLS1ga26ZK8YvqYHAeWR5hc
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEyIiwicm9sZSI6Ikhvc3QiLCJpYXQiOjE3MDQ1NDg4OTN9.0axdDfX7nE_lmsrunrPe5kEBp-YrAiKXcVJSkPK93-0
 
 {
   "role": "Host or security",
@@ -93,4 +93,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwM
   "password": "zaid123",
   "phoneNumber": "0168219343"
 }
+
+###
+
+POST http://localhost:3000/viewHost
+Content-Type: application/json
+Authorization: Bearer your-jwt-token
 
