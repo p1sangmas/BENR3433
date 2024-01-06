@@ -342,6 +342,8 @@ app.post('/viewVisitor', async function(req, res){
  *                 type: string
  *               passNumber:
  *                 type: string
+ *               password:
+ *                type: string
  *     responses:
  *       '200':
  *         description: Visitor registered successfully
