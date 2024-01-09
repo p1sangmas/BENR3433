@@ -260,7 +260,8 @@ app.post('/registerHost', async function (req, res){
  *   post:
  *     summary: Register an Host
  *     description: Register a new Host without security approval
- *     tags: [Host, Security, Admin]
+ *     tags:
+ *      - Host & Security & Admin
  *     requestBody:
  *       required: true
  *       content:
@@ -393,7 +394,8 @@ app.post('/viewHost', async function(req, res){
  *   post:
  *     summary: Create a visitor pass
  *     description: Create a new visitor pass (accessible to Hosts and security personnel)
- *     tags: [Host, Security]
+ *     tags:
+ *       - Host & Security 
  *     security:
  *       - bearerAuth: []
  *     requestBody:
