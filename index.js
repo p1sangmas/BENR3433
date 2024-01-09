@@ -253,7 +253,61 @@ app.post('/registerHost', async function (req, res){
 })
 })
 
-
+//register Host without security approval
+/**
+ * @swagger
+ * /registertestHost:
+ *   post:
+ *     summary: Register an Host
+ *     description: Register a new Host without security approval
+ *     tags: [Host, Security, Admin]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               role:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               idNumber:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               phoneNumber:
+ *                 type: string
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Host registered successfully
+ *       '401':
+ *         description: Unauthorized - Invalid or missing token
+ *       '403':
+ *         description: Forbidden
+ */
+app.post('/registertestHost', async function (req, res){
+  let header = req.headers.authorization;
+  let token = header.split(' ')[1];
+  jwt.verify(token, privatekey, async function(err, decoded) {
+    console.log(decoded)
+    const data = req.body
+    res.send(
+      registerHost(
+        data.role,
+        data.name,
+        data.idNumber,
+        data.email,
+        data.password,
+        data.phoneNumber
+      )
+    )
+  })
+})
 
 //View Visitor
 /**
@@ -332,10 +386,10 @@ app.post('/viewHost', async function(req, res){
     }
 });
 
-//register visitor
+//issue pass visitor
 /**
  * @swagger
- * /createpassVisitor:
+ * /issuepassVisitor:
  *   post:
  *     summary: Create a visitor pass
  *     description: Create a new visitor pass (accessible to Hosts and security personnel)
@@ -389,7 +443,7 @@ app.post('/viewHost', async function(req, res){
  *       '403':
  *         description: Forbidden - User does not have access to register a visitor
  */
-app.post('/createpassVisitor', async function(req, res){
+app.post('/issuepassVisitor', async function(req, res){
   var token = req.header('Authorization').split(" ")[1];
   let decoded;
 
@@ -408,7 +462,7 @@ app.post('/createpassVisitor', async function(req, res){
           category, ethnicity, photoAttributes, passNumber, password
       } = req.body;
 
-      await createpassVisitor(role, name, idNumber, documentType, gender, birthDate, 
+      await issuepassVisitor(role, name, idNumber, documentType, gender, birthDate, 
                               age, documentExpiry, company, TelephoneNumber, 
                               vehicleNumber, category, ethnicity, photoAttributes, 
                               passNumber, password);
@@ -749,8 +803,29 @@ async function registerHost(newrole, newname, newidNumber, newemail, newpassword
   }
 }
 
+//CREATE(register Host)
+async function registertestHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber){
+  await client.connect()
+  const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: newidNumber})
+  if(exist){
+    console.log("Host has already registered")
+  }else{
+    await createListing1(client,
+      {
+        role: newrole,
+        name: newname,
+        idNumber: newidNumber,
+        email: newemail,
+        password: newpassword,
+        phoneNumber: newphoneNumber
+      }
+    );
+    console.log("Host registered sucessfully")
+  }
+}
+
 //CREATE(register Visitor)
-async function createpassVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate, 
+async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate, 
                         newage, newdocumentExpiry, newcompany, newTelephoneNumber, newvehicleNumber,
                         newcategory, newethnicity, newphotoAttributes, newpassNumber, password){
   //TODO: Check if username exist
