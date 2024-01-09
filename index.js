@@ -297,7 +297,7 @@ app.post('/registertestHost', async function (req, res){
     console.log(decoded)
     const data = req.body
     res.send(
-      registerHost(
+      registertestHost(
         data.role,
         data.name,
         data.idNumber,
