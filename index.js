@@ -258,10 +258,9 @@ app.post('/registerHost', async function (req, res){
  * @swagger
  * /registertestHost:
  *   post:
- *     summary: Register an Host
- *     description: Register a new Host without security approval
- *     tags:
- *      - Host & Security & Admin
+ *     summary: Register Test Host
+ *     description: Register a test host with the provided details.
+ *     tags: [Test Host]
  *     requestBody:
  *       required: true
  *       content:
@@ -271,31 +270,33 @@ app.post('/registerHost', async function (req, res){
  *             properties:
  *               role:
  *                 type: string
+ *                 description: Role of the test host.
  *               name:
  *                 type: string
+ *                 description: Name of the test host.
  *               idNumber:
  *                 type: string
+ *                 description: ID number of the test host.
  *               email:
  *                 type: string
+ *                 format: email
+ *                 description: Email address of the test host.
  *               password:
  *                 type: string
+ *                 format: password
+ *                 description: Password for the test host.
  *               phoneNumber:
  *                 type: string
- *     security:
- *       - bearerAuth: []
+ *                 description: Phone number of the test host.
  *     responses:
  *       '200':
- *         description: Host registered successfully
- *       '401':
- *         description: Unauthorized - Invalid or missing token
- *       '403':
- *         description: Forbidden
+ *         description: Test host registered successfully.
+ *       '400':
+ *         description: Bad request - Invalid input data.
+ *       '500':
+ *         description: Internal server error occurred.
  */
 app.post('/registertestHost', async function (req, res){
-  let header = req.headers.authorization;
-  let token = header.split(' ')[1];
-  jwt.verify(token, privatekey, async function(err, decoded) {
-    console.log(decoded)
     const data = req.body
     res.send(
       registertestHost(
@@ -307,7 +308,6 @@ app.post('/registertestHost', async function (req, res){
         data.phoneNumber
       )
     )
-  })
 })
 
 //View Visitor
