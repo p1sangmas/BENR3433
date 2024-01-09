@@ -260,7 +260,8 @@ app.post('/registerHost', async function (req, res){
  *   post:
  *     summary: Register Test Host
  *     description: Register a test host with the provided details.
- *     tags: [Test Host]
+ *     tags:
+ *        - Host & Security & Admin
  *     requestBody:
  *       required: true
  *       content:
