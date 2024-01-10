@@ -387,10 +387,10 @@ app.post('/registerHost', async function (req, res) {
  * @swagger
  * /registertestHost:
  *   post:
- *     summary: Register Test Host
- *     description: Register a test host with the provided details.
+ *     summary: Register a test host
+ *     description: Endpoint to register a test host. Checks if the host with the provided ID number already exists and registers if not.
  *     tags:
- *        - Host & Security & Admin
+ *       - Host & Security & Admin
  *     requestBody:
  *       required: true
  *       content:
@@ -400,31 +400,47 @@ app.post('/registerHost', async function (req, res) {
  *             properties:
  *               role:
  *                 type: string
- *                 description: Role of the test host.
  *               name:
  *                 type: string
- *                 description: Name of the test host.
  *               idNumber:
  *                 type: string
- *                 description: ID number of the test host.
  *               email:
  *                 type: string
- *                 format: email
- *                 description: Email address of the test host.
  *               password:
  *                 type: string
- *                 format: password
- *                 description: Password for the test host.
  *               phoneNumber:
  *                 type: string
- *                 description: Phone number of the test host.
  *     responses:
- *       '200':
- *         description: Test host registered successfully.
- *       '400':
- *         description: Bad request - Invalid input data.
- *       '500':
+ *       200:
+ *         description: Host registered successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Host registered successfully
+ *       400:
+ *         description: Host with the provided ID number already exists.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Host has already registered
+ *       500:
  *         description: Internal server error occurred.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error occurred.
  */
 app.post('/registertestHost', async function (req, res) {
   const data = req.body;
