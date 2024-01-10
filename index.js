@@ -375,38 +375,65 @@ app.post('/registertestHost', async function (req, res){
  * @swagger
  * /viewVisitor:
  *   post:
- *     summary: "View visitors"
- *     description: "Retrieve visitors based on user role"
+ *     summary: View Visitor Details
+ *     description: Retrieve visitor details based on the provided token and role.
  *     tags:
  *       - Host & Security
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       '200':
- *         description: "Visitors retrieved successfully"
- *       '400':
- *         description: "Invalid token or error in retrieving visitors"
+ *         description: Successfully retrieved visitor details.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 idNumber:
+ *                   type: string
+ *                   description: The unique ID number of the visitor.
+ *                 name:
+ *                   type: string
+ *                   description: The name of the visitor.
+ *                 // Add other properties as needed based on your visitor schema
+ *       '403':
+ *         description: Forbidden - The role does not have permission to view visitor details or visitor not found.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Forbidden!"
+ *       '500':
+ *         description: Internal Server Error - Failed to retrieve visitor details due to server error.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Internal Server Error!"
  *       '401':
- *         description: "Unauthorized - Invalid token or insufficient permissions"
- *     consumes:
- *       - "application/json"
- *     produces:
- *       - "application/json"
- *   securityDefinitions:
- *     JWT:
- *       type: "apiKey"
- *       name: "Authorization"
- *       in: "header"
+ *         description: Unauthorized - Invalid or expired token.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Error!"
  */
-app.post('/viewVisitor', async function(req, res){
+app.post('/viewVisitor', async function(req, res) {
   var token = req.header('Authorization').split(" ")[1];
   try {
-      var decoded = jwt.verify(token, privatekey);
-      console.log(decoded.role);
-      res.send(await viewVisitor(decoded.idNumber, decoded.role));
-    } catch(err) {
-      res.send("Error!");
+    var decoded = jwt.verify(token, privatekey);
+    console.log(decoded.role);
+    const result = await viewVisitor(decoded.idNumber, decoded.role);
+    
+    // Check if the result is a string (error message) or an object (visitor details)
+    if (typeof result === 'string') {
+      res.status(403).send(result); // Send forbidden or visitor not found error
+    } else {
+      res.send(result); // Send visitor details
     }
+  } catch(err) {
+    res.status(500).send("Internal Server Error!"); // Send internal server error
+  }
 });
 
 //View Host
@@ -414,37 +441,68 @@ app.post('/viewVisitor', async function(req, res){
  * @swagger
  * /viewHost:
  *   post:
- *     summary: "View hosts"
- *     description: "Retrieve hosts based on user role"
- *     tags: [Admin]
+ *     summary: View Host Details
+ *     description: Retrieve host details based on the provided token and role. Only admins have access to view all hosts.
+ *     tags:
+ *       - Admin
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       '200':
- *         description: "Hosts retrieved successfully"
- *       '400':
- *         description: "Invalid token or error in retrieving hosts"
+ *         description: Successfully retrieved host details or list of hosts.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   idNumber:
+ *                     type: string
+ *                     description: The unique ID number of the host.
+ *                   name:
+ *                     type: string
+ *                     description: The name of the host.
+ *                   // Add other properties as needed based on your host schema
+ *       '403':
+ *         description: Forbidden - The role does not have permission to view hosts or is not an admin.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Forbidden! Only admins can view hosts."
+ *       '500':
+ *         description: Internal Server Error - Failed to retrieve host details due to server error.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Internal Server Error!"
  *       '401':
- *         description: "Unauthorized - Invalid token or insufficient permissions"
- *     consumes:
- *       - "application/json"
- *     produces:
- *       - "application/json"
- *   securityDefinitions:
- *     JWT:
- *       type: "apiKey"
- *       name: "Authorization"
- *       in: "header"
+ *         description: Unauthorized - Invalid or expired token.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Error!"
  */
-app.post('/viewHost', async function(req, res){
+
+app.post('/viewHost', async function(req, res) {
   var token = req.header('Authorization').split(" ")[1];
   try {
-      var decoded = jwt.verify(token, privatekey);
-      console.log(decoded.role);
-      res.send(await viewHost(decoded.idNumber, decoded.role));
-    } catch(err) {
-      res.send("Error!");
+    var decoded = jwt.verify(token, privatekey);
+    console.log(decoded.role);
+    const result = await viewHost(decoded.idNumber, decoded.role);
+    
+    // Check if the result is a string (error message) or an array (hosts)
+    if (typeof result === 'string') {
+      res.status(403).send(result); // Send forbidden or invalid role error
+    } else {
+      res.send(result); // Send host details
     }
+  } catch(err) {
+    res.status(500).send("Internal Server Error!"); // Send internal server error
+  }
 });
 
 //issue pass visitor
@@ -824,19 +882,16 @@ async function retrieveVisitor(res, idNumber, password) {
 async function viewVisitor(idNumberHost, role) {
   await client.connect();
   let exist;
-
+  
   if (role === "Host") {
     exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumberHost: idNumberHost });
     if (!exist) {
-      // Send error message in response if visitor does not exist for the host
-      return "Visitor not found for this host!";
+      // Send visitor not found error in response
+      return "Visitor not found!";
     }
   } else if (role === "visitor" || role === "security") {
-    // Send forbidden error message in response
+    // Send forbidden error in response
     return "Forbidden!";
-  } else {
-    // Handle other roles if necessary
-    return "Invalid role!";
   }
   
   return exist;
@@ -851,10 +906,10 @@ async function viewHost(idNumber, role) {
   if (role === "admin") {
     exist = await client.db("assignmentCondo").collection("owner").find({}).toArray();
   } else if (role === "security" || role === "visitor") {
-    // Send forbidden error message in response
+    // Return forbidden error message
     return "Forbidden! Only admins can view hosts.";
   } else {
-    // Handle other roles if necessary
+    // Return invalid role error message
     return "Invalid role!";
   }
   
