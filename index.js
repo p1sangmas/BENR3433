@@ -51,47 +51,46 @@ app.use(express.json());
  * @swagger
  * /retrieveVisitor:
  *   post:
- *     summary: "Retrieve Visitor Information"
- *     description: "Retrieve visitor information using the provided idNumber."
- *     tags: 
+ *     summary: "Retrieve visitor information"
+ *     description: "Retrieve visitor information based on the provided idNumber."
+ *     tags:
  *       - Visitor
- *     parameters:
- *       - in: "body"
- *         name: "visitorDetails"
- *         description: "Visitor details including idNumber."
- *         required: true
- *         schema:
- *           type: "object"
- *           properties:
- *             idNumber:
- *               type: "string"
- *               description: "ID number of the visitor."
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               idNumber:
+ *                 type: string
+ *                 description: "The unique ID number of the visitor."
+ *             required:
+ *               - idNumber
  *     responses:
- *       200:
- *         description: "Successfully retrieved visitor information along with a JWT token."
- *         schema:
- *           type: "object"
- *           properties:
- *             Token:
- *               type: "string"
- *               description: "JWT token for authentication."
- *             Visitor Info:
- *               type: "object"
- *               description: "Details of the retrieved visitor."
- *       404:
- *         description: "Visitor not found based on the provided idNumber."
- *       401:
- *         description: "Unauthorized - Incorrect or missing credentials."
- *       500:
- *         description: "Internal server error occurred."
- *     consumes:
- *       - "application/json"
- *     produces:
- *       - "application/json"
+ *       '200':
+ *         description: "Successfully retrieved visitor information."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 Token:
+ *                   type: string
+ *                   description: "JWT token for authentication."
+ *                 Visitor Info:
+ *                   type: object
+ *                   description: "Details of the visitor."
+ *       '404':
+ *         description: "Visitor not found."
+ *       '500':
+ *         description: "Internal Server Error."
+ *     security:
+ *       - bearerAuth: []
  */
 app.post('/retrieveVisitor', async function(req, res) {
   const { idNumber } = req.body;
-  retrieveVisitor(res, idNumber);
+  retrieveVisitor(res, idNumber); // Only pass idNumber to the function
 });
 
 //login as Host
@@ -913,18 +912,23 @@ async function createListing2(client, newListing){
 //READ(retrieve pass as visitor)
 async function retrieveVisitor(res, idNumber) {
   await client.connect();
-  const exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumber: idNumber });
-
-  if (exist) {
-    // Here, instead of checking for password, simply return visitor info if the visitor exists.
-    const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
-    res.send({
-      "Token": token,
-      "Visitor Info": exist
-    });
-    await logs(idNumber, exist.name, exist.role); // Assuming the logs function is correct; you may need to adjust parameters if needed.
-  } else {
-    res.status(404).send("Visitor not exist!"); // Send visitor not exist message in response
+  
+  try {
+    const exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumber: idNumber });
+    
+    if (exist) {
+      const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
+      res.status(200).send({
+        "Token": token,
+        "Visitor Info": exist
+      });
+      await logs(idNumber, exist.name, exist.role); // Assuming the logs function is correct.
+    } else {
+      res.status(404).send("Visitor not found!"); // Send visitor not found message in response
+    }
+  } catch (error) {
+    console.error("Error retrieving visitor:", error);
+    res.status(500).send("Internal Server Error"); // Handle any unexpected errors.
   }
 }
 
