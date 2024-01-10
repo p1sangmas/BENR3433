@@ -460,28 +460,36 @@ app.post('/registertestHost', async function (req, res) {
  * @swagger
  * /viewVisitor:
  *   post:
- *     summary: "View visitors"
- *     description: "Retrieve visitors based on user role"
+ *     summary: View visitor details based on the host's ID
+ *     description: Retrieve visitor details based on the host's ID number. This endpoint is restricted to hosts.
  *     tags:
  *       - Host & Security
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: JWT token for authentication
+ *     requestBody:
+ *       required: false
  *     responses:
  *       '200':
- *         description: "Visitors retrieved successfully"
- *       '400':
- *         description: "Invalid token or error in retrieving visitors"
+ *         description: Successful retrieval of visitor details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
  *       '401':
- *         description: "Unauthorized - Invalid token or insufficient permissions"
- *     consumes:
- *       - "application/json"
- *     produces:
- *       - "application/json"
- *   securityDefinitions:
- *     JWT:
- *       type: "apiKey"
- *       name: "Authorization"
- *       in: "header"
+ *         description: Unauthorized - Invalid or expired token
+ *       '403':
+ *         description: Forbidden - Role does not have permission to access
+ *       '404':
+ *         description: Not Found - No visitors found for the specified host
+ *       '400':
+ *         description: Bad Request - Invalid role provided in the token
  */
 app.post('/viewVisitor', async function(req, res) {
   const token = req.header('Authorization').split(" ")[1];
