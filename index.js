@@ -370,8 +370,7 @@ app.post('/registerHost', async function (req, res) {
       return res.status(401).send("Unauthorized"); // Send unauthorized error in response if JWT verification fails
     }
     
-    const result = await registerHost(decoded, req.body);
-    res.send(result);
+    registerHost(decoded, req.body, res);
   });
 });
 
@@ -984,13 +983,13 @@ async function loginAdmin(res, idNumber, hashed) {
 
 
 //CREATE(register Host)
-async function registerHost(decoded, data) {
+async function registerHost(decoded, data, res) {
   if (decoded && decoded.role === "security") {
     await client.connect();
     const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: data.idNumber });
 
     if (exist) {
-      return "Host has already registered"; // Return message to be sent in response
+      res.status(400).send("Host has already registered"); // Send message in response
     } else {
       await createListing1(client, {
         role: data.role,
@@ -1000,10 +999,10 @@ async function registerHost(decoded, data) {
         password: data.password,
         phoneNumber: data.phoneNumber
       });
-      return "Host registered successfully"; // Return message to be sent in response
+      res.status(200).send("Host registered successfully"); // Send message in response
     }
   } else {
-    return "You have no access to register a Host!"; // Return forbidden message
+    res.status(403).send("You have no access to register a Host!"); // Send forbidden message
   }
 }
 
