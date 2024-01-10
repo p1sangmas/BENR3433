@@ -364,7 +364,14 @@ app.post('/loginAdmin', async function (req, res) {
  */
 app.post('/registerHost', async function (req, res) {
   let header = req.headers.authorization;
+
+  // Check if Authorization header exists and contains a token
+  if (!header || !header.startsWith('Bearer ')) {
+    return res.status(401).send("Unauthorized"); // Send unauthorized error in response
+  }
+
   let token = header.split(' ')[1];
+  
   jwt.verify(token, privatekey, async function(err, decoded) {
     if (err) {
       return res.status(401).send("Unauthorized"); // Send unauthorized error in response if JWT verification fails
