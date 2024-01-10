@@ -237,41 +237,6 @@ app.post('/loginAdmin', async function (req, res) {
   const hashed = await generateHash(password);
   await loginAdmin(res, idNumber, hashed);
 });
-<<<<<<< HEAD
-=======
-
-async function loginAdmin(res, idNumber, hashed) {
-  await client.connect();
-
-  try {
-    const exist = await client.db("assignmentCondo").collection("admin").findOne({ idNumber: idNumber });
-
-    if (exist) {
-      const passwordMatch = await bcrypt.compare(hashed, exist.password);
-
-      if (passwordMatch) {
-        console.log("Login Success!\nRole: " + exist.role);
-        logs(idNumber, exist.name, exist.role);
-        const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
-        res.status(200).json({ success: true, message: "Login Success!", token: token });
-      } else {
-        console.log("Wrong password!");
-        res.status(401).json({ success: false, message: "Wrong password!" });
-      }
-    } else {
-      console.log("Username not exist!");
-      res.status(404).json({ success: false, message: "Username not exist!" });
-    }
-  } catch (error) {
-    console.error("Error:", error.message);
-    res.status(500).json({ success: false, message: "An error occurred" });
-  } finally {
-    client.close();
-  }
-}
-
->>>>>>> 830f62f5c7f87c5c5cf1ff504ddfa030d8593e02
-
 //register Host
 /**
  * @swagger
