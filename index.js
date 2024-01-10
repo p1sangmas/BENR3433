@@ -846,7 +846,16 @@ app.post('/retrievePhoneNumber', async function (req, res){
   *                   example: An error occurred.
  */
 app.post('/manageRole', async function (req, res){
-  var token = req.header('Authorization').split(" ")[1];
+  var token;
+
+  // Check if Authorization header is present and contains the Bearer token
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
+  } else {
+    // Send a 400 Bad Request response if no token is found
+    return res.status(400).json({ success: false, message: "Invalid or no token provided" });
+  }
+
   let decoded;
 
   try {
@@ -876,7 +885,6 @@ app.post('/manageRole', async function (req, res){
     res.status(403).json({ success: false, message: "Access Denied" });
   }
 });
-
 
 
 app.listen(port, () => {
