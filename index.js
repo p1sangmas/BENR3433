@@ -51,9 +51,10 @@ app.use(express.json());
  * @swagger
  * /retrieveVisitor:
  *   post:
- *     summary: Authenticate visitor
- *     description: Login with identification number and password for a visitor to view pass
- *     tags: [Visitor]
+ *     summary: Retrieve Visitor Details
+ *     description: Retrieve visitor details based on the provided ID number and password.
+ *     tags:
+ *       - Visitor
  *     requestBody:
  *       required: true
  *       content:
@@ -63,23 +64,49 @@ app.use(express.json());
  *             properties:
  *               idNumber:
  *                 type: string
+ *                 description: The unique ID number of the visitor.
  *               password:
  *                 type: string
+ *                 description: The password of the visitor.
  *     responses:
  *       '200':
- *         description: Login successful
+ *         description: Successfully retrieved visitor details and generated token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 Token:
+ *                   type: string
+ *                   description: JWT token for the visitor.
+ *                 Visitor Info:
+ *                   type: object
+ *                   description: Details of the visitor.
+ *       '401':
+ *         description: Unauthorized - Incorrect password provided.
  *         content:
  *           text/plain:
  *             schema:
  *               type: string
- *       '400':
- *         description: Invalid request body
- *       '401':
- *         description: Unauthorized - Invalid credentials
+ *               example: "Wrong password!"
+ *       '404':
+ *         description: Not Found - Visitor with the provided ID number does not exist.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Visitor not exist!"
+ *       '500':
+ *         description: Internal Server Error - Failed to retrieve visitor details due to server error.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Internal Server Error!"
  */
-app.post('/retrieveVisitor', async function(req, res){
-  const {idNumber, password} = req.body;
-  retrieveVisitor(res, idNumber , password);
+app.post('/retrieveVisitor', async function(req, res) {
+  const { idNumber, password } = req.body;
+  retrieveVisitor(res, idNumber, password);
 });
 
 //login as Host
@@ -795,26 +822,26 @@ async function createListing2(client, newListing){
 }
 
 //READ(retrieve pass as visitor)
-async function retrieveVisitor(res, idNumber, password){
+async function retrieveVisitor(res, idNumber, password) {
   await client.connect();
-    const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: idNumber});
-    if(exist){
-        if(bcrypt.compare(password,await exist.password)){
-        console.log("Welcome!");
-        token = jwt.sign({ idNumber: idNumber, role: exist.role}, privatekey);
-        res.send({
-          "Token": token,
-          "Visitor Info": exist
-        });
-        
-        res.send(exist);
-        await logs(id, exist.name, exist.role);
-        }else{
-            console.log("Wrong password!")
-        }
-    }else{
-        console.log("Visitor not exist!");
+  const exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumber: idNumber });
+
+  if (exist) {
+    const passwordMatch = await bcrypt.compare(password, exist.password);
+    if (passwordMatch) {
+      console.log("Welcome!"); // This line is kept as a log; you may remove or change it if you want.
+      const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
+      res.send({
+        "Token": token,
+        "Visitor Info": exist
+      });
+      await logs(idNumber, exist.name, exist.role); // Assuming the logs function is correct; you may need to adjust parameters if needed.
+    } else {
+      res.status(401).send("Wrong password!"); // Send wrong password message in response
     }
+  } else {
+    res.status(404).send("Visitor not exist!"); // Send visitor not exist message in response
+  }
 }
 
 //READ(view all visitors)
