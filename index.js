@@ -689,12 +689,6 @@ app.post('/deleteVisitor', async function (req, res){
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: JWT token for authentication
  *       - in: body
  *         name: idNumber
  *         required: true
