@@ -607,15 +607,22 @@ app.post('/viewHost', async function(req, res){
  *         description: Forbidden - User does not have access to register a visitor
  */
 app.post('/issuepassVisitor', async function(req, res){
-  var token = req.header('Authorization').split(" ")[1];
+  const header = req.header('Authorization');
+  
+  // Check if Authorization header exists
+  if (!header || !header.startsWith("Bearer ")) {
+    return res.status(401).send("Invalid or no token"); // Send message if token is missing or malformed
+  }
+
+  const token = header.split(" ")[1];
   let decoded;
 
   try {
-      decoded = jwt.verify(token, privatekey);
-      console.log(decoded.role);
+    decoded = jwt.verify(token, privatekey);
+    console.log(decoded.role);
   } catch(err) {
-      console.log("Error decoding token:", err.message);
-      return res.status(401).send("Unauthorized"); // Send a 401 Unauthorized response
+    console.log("Error decoding token:", err.message);
+    return res.status(401).send("Unauthorized"); // Send a 401 Unauthorized response
   }
 
   if (decoded && (decoded.role === "Host" || decoded.role === "security")){
@@ -1076,14 +1083,14 @@ async function registertestHost(newrole, newname, newidNumber, newemail, newpass
 //CREATE(register Visitor)
 async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate, 
                         newage, newdocumentExpiry, newcompany, newTelephoneNumber, newvehicleNumber,
-                        newcategory, newethnicity, newphotoAttributes, newpassNumber, password){
+                        newcategory, newethnicity, newphotoAttributes, newpassNumber, password, res){
   //TODO: Check if username exist
-  await client.connect()
-  const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: newidNumber})
-  //hashed = await bcrypt.hash(password, 10);
+  await client.connect();
+  const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: newidNumber});
+  
   if(exist){
-      console.log("Visitor has already registered")
-  }else{
+      res.status(400).send("Visitor has already registered"); // Send a 400 Bad Request status
+  } else {
       await client.db("assignmentCondo").collection("visitor").insertOne(
         {
           role: newrole,
@@ -1091,7 +1098,7 @@ async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, 
           idNumber: newidNumber,
           documentType: newdocumentType,
           gender: newgender,
-          birthDate:newbirthDate,
+          birthDate: newbirthDate,
           age: newage,
           documentExpiry: newdocumentExpiry,
           company: newcompany,
@@ -1104,9 +1111,10 @@ async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, 
           password: password 
         }
       );
-      console.log("Registered successfully!")
+      res.status(200).send("Registered successfully!"); // Send a 200 OK status
   }
-} 
+}
+
 
 //READ(retrieve phone number for visitor)
 async function retrievePhoneNumber(idNumber){
