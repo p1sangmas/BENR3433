@@ -626,40 +626,12 @@ app.post('/issuepassVisitor', async function(req, res){
   }
 });
 
-//delete visitor
-/**
- * @swagger
- * /deleteVisitor:
- *   post:
- *     summary: Delete a visitor
- *     description: Delete a visitor by name and ID number
- *     tags: [Host]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               idNumber:
- *                 type: string
- *     responses:
- *       '200':
- *         description: Visitor deleted successfully
- *       '401':
- *         description: Unauthorized - Invalid or missing token
- *       '500':
- *         description: Internal Server Error
- */
-app.post('/deleteVisitor', async function (req, res){
-  const {name, idNumber} = req.body
-  await deleteVisitor(name, idNumber)
-  res.send(req.body)
-})
+//delete Visitor
+// app.post('/deleteVisitor', async function (req, res){
+//   const {name, idNumber} = req.body
+//   await deleteVisitor(name, idNumber)
+//   res.send(req.body)
+// })
 
 // Retrieve Phone Number
 /**
@@ -1180,23 +1152,22 @@ async function manageRole(idNumber, role) {
 }
 
 
-
 //DELETE(delete visitor)
-async function deleteVisitor(oldname, oldidNumber){
-  await client.connect()
-  const exist = await client.db("assignmentCondo").collection("visitor").findOne({name: oldname})
-  if(exist){
-    checkidNumber = await exist.idNumber;
-    if(oldidNumber == checkidNumber){
-      await client.db("assignmentCondo").collection("visitor").deleteOne({name: oldname})
-      console.log("Visitor account deleted successfully.")
-    }else{
-      console.log("ID number is incorrect")
-    }
-  }else{
-    console.log("Visitor does not exist.")
-  }
-}
+//async function deleteVisitor(oldname, oldidNumber){
+//  await client.connect()
+//  const exist = await client.db("assignmentCondo").collection("visitor").findOne({name: oldname})
+//  if(exist){
+//    checkidNumber = await exist.idNumber;
+//    if(oldidNumber == checkidNumber){
+//      await client.db("assignmentCondo").collection("visitor").deleteOne({name: oldname})
+//       console.log("Visitor account deleted successfully.")
+//     }else{
+//      console.log("ID number is incorrect")
+//     }
+//   }else{
+//     console.log("Visitor does not exist.")
+//   }
+// }
 
 //Generate hash password
 async function generateHash(password){
