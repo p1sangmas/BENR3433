@@ -259,7 +259,7 @@ app.post('/loginAdmin', async function (req, res) {
  *   post:
  *     summary: Register an Host
  *     description: Register a new Host with security role
- *     tags: [Host]
+ *     tags: [Security]
  *     requestBody:
  *       required: true
  *       content:
