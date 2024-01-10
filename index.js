@@ -795,53 +795,72 @@ async function createListing2(client, newListing){
 }
 
 //READ(retrieve pass as visitor)
-async function retrieveVisitor(res, idNumber, password){
+async function retrieveVisitor(res, idNumber, password) {
   await client.connect();
-    const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: idNumber});
-    if(exist){
-        if(bcrypt.compare(password,await exist.password)){
-        console.log("Welcome!");
-        token = jwt.sign({ idNumber: idNumber, role: exist.role}, privatekey);
-        res.send({
-          "Token": token,
-          "Visitor Info": exist
-        });
-        
-        res.send(exist);
-        await logs(id, exist.name, exist.role);
-        }else{
-            console.log("Wrong password!")
-        }
-    }else{
-        console.log("Visitor not exist!");
+  const exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumber: idNumber });
+  
+  if (exist) {
+    const passwordMatch = await bcrypt.compare(password, exist.password);
+    if (passwordMatch) {
+      console.log("Welcome!");
+      const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
+      res.send({
+        "Token": token,
+        "Visitor Info": exist
+      });
+      await logs(idNumber, exist.name, exist.role);
+    } else {
+      // Send wrong password error in response
+      res.status(401).send("Wrong password!");
     }
+  } else {
+    // Send visitor not found error in response
+    res.status(404).send("Visitor not exist!");
+  }
 }
 
+
 //READ(view all visitors)
-async function viewVisitor(idNumberHost, role){
-  var exist;
+async function viewVisitor(idNumberHost, role) {
   await client.connect();
-  if(role == "Host"){
+  let exist;
+
+  if (role === "Host") {
     exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumberHost: idNumberHost });
+    if (!exist) {
+      // Send error message in response if visitor does not exist for the host
+      return "Visitor not found for this host!";
+    }
+  } else if (role === "visitor" || role === "security") {
+    // Send forbidden error message in response
+    return "Forbidden!";
+  } else {
+    // Handle other roles if necessary
+    return "Invalid role!";
   }
-  else if(role == "visitor" || role == "security"){
-    console.log("Forbidden!");
-  }
+  
   return exist;
 }
 
+
 //READ(view all visitors)
-async function viewHost(idNumber, role){
-  var exist;
+async function viewHost(idNumber, role) {
   await client.connect();
-  if(role == "admin"){
+  let exist;
+
+  if (role === "admin") {
     exist = await client.db("assignmentCondo").collection("owner").find({}).toArray();
+  } else if (role === "security" || role === "visitor") {
+    // Send forbidden error message in response
+    return "Forbidden! Only admins can view hosts.";
+  } else {
+    // Handle other roles if necessary
+    return "Invalid role!";
   }
-  else if(role == "security" || role == "visitor"){
-    console.log("Visitor not exist!");
-  }
+  
   return exist;
 }
+
 
 //READ(login as Host)
 async function loginHost(res, idNumber, hashed) {
@@ -920,46 +939,54 @@ async function loginAdmin(res, idNumber, hashed) {
 
 
 //CREATE(register Host)
-async function registerHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber){
-  await client.connect()
-  const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: newidNumber})
-  if(exist){
-    console.log("Host has already registered")
-  }else{
-    await createListing1(client,
-      {
-        role: newrole,
-        name: newname,
-        idNumber: newidNumber,
-        email: newemail,
-        password: newpassword,
-        phoneNumber: newphoneNumber
-      }
-    );
-    console.log("Host registered sucessfully")
+async function registerHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber) {
+  await client.connect();
+  
+  const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: newidNumber });
+
+  if (exist) {
+    // Send response message if host has already registered
+    return "Host has already registered";
+  } else {
+    await createListing1(client, {
+      role: newrole,
+      name: newname,
+      idNumber: newidNumber,
+      email: newemail,
+      password: newpassword,
+      phoneNumber: newphoneNumber
+    });
+    
+    // Send response message if host registered successfully
+    return "Host registered successfully";
   }
 }
 
+
 //CREATE(register Host)
-async function registertestHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber){
-  await client.connect()
-  const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: newidNumber})
-  if(exist){
-    console.log("Host has already registered")
-  }else{
-    await createListing1(client,
-      {
-        role: newrole,
-        name: newname,
-        idNumber: newidNumber,
-        email: newemail,
-        password: newpassword,
-        phoneNumber: newphoneNumber
-      }
-    );
-    console.log("Host registered sucessfully")
+async function registertestHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber) {
+  await client.connect();
+  
+  const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: newidNumber });
+
+  if (exist) {
+    // Return a message if the host has already registered
+    return "Host has already registered";
+  } else {
+    await createListing1(client, {
+      role: newrole,
+      name: newname,
+      idNumber: newidNumber,
+      email: newemail,
+      password: newpassword,
+      phoneNumber: newphoneNumber
+    });
+    
+    // Return a message if the host is registered successfully
+    return "Host registered successfully";
   }
 }
+
 
 //CREATE(register Visitor)
 async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate, 
