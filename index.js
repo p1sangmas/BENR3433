@@ -578,8 +578,8 @@ app.post('/retrievePhoneNumber', async function (req, res){
 // Manage User Role
 /**
  * @swagger
-  * /manageRole:
-  *   post:
+* /manageRole:
+*   post:
   *     summary: Manage user role
   *     description: Manage the role of a user by updating the role associated with the provided ID number (accessible to administrators).
   *     tags: [Admin]
@@ -599,20 +599,69 @@ app.post('/retrievePhoneNumber', async function (req, res){
   *     responses:
   *       '200':
   *         description: Role managed successfully.
-  *         schema:
-  *           type: object
-  *           properties:
-  *             message:
-  *               type: string
-  *               example: Role managed successfully!
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: true
+  *                 message:
+  *                   type: string
+  *                   example: Role managed successfully!
+  *       '400':
+  *         description: Bad Request - Role management failed.
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: false
+  *                 message:
+  *                   type: string
+  *                   example: Username not in the database!
   *       '401':
   *         description: Unauthorized - Invalid or missing token.
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: false
+  *                 message:
+  *                   type: string
+  *                   example: Unauthorized
   *       '403':
   *         description: Forbidden - User does not have the necessary permissions.
-  *       '404':
-  *         description: Username with the provided ID number does not exist in the database.
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: false
+  *                 message:
+  *                   type: string
+  *                   example: Access Denied
   *       '500':
   *         description: Internal server error occurred.
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: false
+  *                 message:
+  *                   type: string
+  *                   example: An error occurred.
  */
 app.post('/manageRole', async function (req, res){
   var token = req.header('Authorization').split(" ")[1];
@@ -622,24 +671,30 @@ app.post('/manageRole', async function (req, res){
     decoded = jwt.verify(token, privatekey);
   } catch(err) {
     console.log("Error decoding token:", err.message);
-    return res.status(401).send("Unauthorized");
+    return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 
   if (decoded && (decoded.role === "admin")){
     const { idNumber, role } = req.body;
 
     try {
-      await manageRole(idNumber, role);
-      res.status(200).send("Role managed successfully!");
+      const result = await manageRole(idNumber, role);
+      
+      if (result.success) {
+        res.status(200).json({ success: true, message: result.message });
+      } else {
+        res.status(400).json({ success: false, message: result.message });
+      }
     } catch (error) {
       console.log(error.message);
-      res.status(404).send(error.message);
+      res.status(500).json({ success: false, message: "An error occurred" });
     }
   } else {
     console.log("Access Denied!");
-    res.status(403).send("Access Denied");
+    res.status(403).json({ success: false, message: "Access Denied" });
   }
 });
+
 
 
 app.listen(port, () => {
@@ -902,17 +957,22 @@ async function manageRole(idNumber, role) {
       // Delete the user from the old collection
       await ownerCollection.deleteOne({ idNumber: idNumber });
       console.log("User data deleted from the old collection.");
+
+      // Send a success response to the client
+      return { success: true, message: "Role managed successfully!" };
     } else {
-      console.log("Username not in the database!");
+      // Send an error response to the client
+      return { success: false, message: "Username not in the database!" };
     }
   } catch (error) {
+    // Handle other errors
     console.log("Error:", error.message);
+    // Send an error response to the client
+    return { success: false, message: "An error occurred." };
   } finally {
     client.close();
   }
 }
-
-
 
 
 
