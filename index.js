@@ -87,9 +87,10 @@ app.post('/retrieveVisitor', async function(req, res){
  * @swagger
  * /loginHost:
  *   post:
- *     summary: Authenticate Host
- *     description: Login with identification number and password
- *     tags: [Host]
+ *     summary: Login as Host
+ *     description: Authenticate and login as a host.
+ *     tags:
+ *       - Host
  *     requestBody:
  *       required: true
  *       content:
@@ -99,20 +100,26 @@ app.post('/retrieveVisitor', async function(req, res){
  *             properties:
  *               idNumber:
  *                 type: string
+ *                 description: The unique ID number of the host.
  *               password:
  *                 type: string
+ *                 description: The password associated with the host's account.
  *     responses:
  *       '200':
- *         description: Login successful
+ *         description: Successfully authenticated. Returns a JWT token.
  *         content:
  *           text/plain:
  *             schema:
  *               type: string
- *       '400':
- *         description: Invalid request body
+ *               example: "Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZEN..."
  *       '401':
- *         description: Unauthorized - Invalid credentials
+ *         description: Unauthorized - Incorrect password.
+ *       '404':
+ *         description: Not Found - Host with the provided ID number does not exist.
+ *       '500':
+ *         description: Internal Server Error - Failed to authenticate due to server error.
  */
+
 app.post( '/loginHost',async function (req, res) {
   let {idNumber, password} = req.body;
   const hashed = await generateHash(password);
@@ -124,9 +131,10 @@ app.post( '/loginHost',async function (req, res) {
  * @swagger
  * /loginSecurity:
  *   post:
- *     summary: Authenticate security personnel
- *     description: Login with identification number and password
- *     tags: [Security]
+ *     summary: Login as Security
+ *     description: Authenticate and login as a security personnel.
+ *     tags:
+ *       - Security
  *     requestBody:
  *       required: true
  *       content:
@@ -136,25 +144,30 @@ app.post( '/loginHost',async function (req, res) {
  *             properties:
  *               idNumber:
  *                 type: string
+ *                 description: The unique ID number of the security personnel.
  *               password:
  *                 type: string
+ *                 description: The password associated with the security personnel's account.
  *     responses:
  *       '200':
- *         description: Login successful
+ *         description: Successfully authenticated. Returns a JWT token.
  *         content:
  *           text/plain:
  *             schema:
  *               type: string
- *       '400':
- *         description: Invalid request body
+ *               example: "Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZEN..."
  *       '401':
- *         description: Unauthorized - Invalid credentials
+ *         description: Unauthorized - Incorrect password.
+ *       '404':
+ *         description: Not Found - Security personnel with the provided ID number does not exist.
+ *       '500':
+ *         description: Internal Server Error - Failed to authenticate due to server error.
  */
-app.post( '/loginSecurity',async function (req, res) {
-  let {idNumber, password} = req.body
+app.post('/loginSecurity', async function (req, res) {
+  let { idNumber, password } = req.body;
   const hashed = await generateHash(password);
-  await loginSecurity(res, idNumber, hashed)
-})
+  await loginSecurity(res, idNumber, hashed);
+});
 
 //login as Admin
 /**
@@ -237,6 +250,8 @@ app.post('/loginAdmin', async function (req, res) {
   const hashed = await generateHash(password);
   await loginAdmin(res, idNumber, hashed);
 });
+
+
 //register Host
 /**
  * @swagger
@@ -829,44 +844,50 @@ async function viewHost(idNumber, role){
 }
 
 //READ(login as Host)
-async function loginHost(res, idNumber, hashed){
-  await client.connect()
+async function loginHost(res, idNumber, hashed) {
+  await client.connect();
   const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: idNumber });
-    if (exist) {
-        const passwordMatch = await bcrypt.compare(exist.password, hashed);
-        if (passwordMatch) {
-            console.log("Login Success!\nRole: "+ exist.role);
-            logs(idNumber, exist.name, exist.role);
-            const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
-            res.send("Token: " + token);
-        } else {
-            console.log("Wrong password!");
-        }
+  
+  if (exist) {
+    const passwordMatch = await bcrypt.compare(exist.password, hashed);
+    if (passwordMatch) {
+      console.log("Login Success!\nRole: " + exist.role);
+      logs(idNumber, exist.name, exist.role);
+      const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
+      res.send("Token: " + token);
     } else {
-        console.log("Username not exist!");
+      // Send password mismatch error in response
+      res.status(401).send("Wrong password!");
     }
+  } else {
+    // Send username not found error in response
+    res.status(404).send("Username not exist!");
+  }
 }
 
-//READ(login as Security)
-async function loginSecurity(res, idNumber, hashed){
-  await client.connect()
+
+// READ (login as Security)
+async function loginSecurity(res, idNumber, hashed) {
+  await client.connect();
   const exist = await client.db("assignmentCondo").collection("security").findOne({ idNumber: idNumber });
-    if (exist) {
-        const passwordMatch = await bcrypt.compare(exist.password, hashed);
-        if (passwordMatch) {
-            console.log("Login Success!\nRole: "+ exist.role);
-            logs(idNumber, exist.name, exist.role);
-            const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
-            res.send("Token: " + token);
-        } else {
-            console.log("Wrong password!");
-        }
+  
+  if (exist) {
+    const passwordMatch = await bcrypt.compare(exist.password, hashed);
+    if (passwordMatch) {
+      console.log("Login Success!\nRole: " + exist.role);
+      logs(idNumber, exist.name, exist.role);
+      const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
+      res.send("Token: " + token);
     } else {
-        console.log("Username not exist!");
+      // Send password mismatch error in response
+      res.status(401).send("Wrong password!");
     }
+  } else {
+    // Send username not found error in response
+    res.status(404).send("Username not exist!");
+  }
 }
 
-//READ(login as Admin)
 async function loginAdmin(res, idNumber, hashed) {
   await client.connect();
 
@@ -896,6 +917,7 @@ async function loginAdmin(res, idNumber, hashed) {
     client.close();
   }
 }
+
 
 //CREATE(register Host)
 async function registerHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber){
