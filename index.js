@@ -1152,6 +1152,7 @@ async function manageRole(idNumber, role) {
 }
 
 
+
 //DELETE(delete visitor)
 //async function deleteVisitor(oldname, oldidNumber){
 //  await client.connect()
