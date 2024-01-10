@@ -159,39 +159,115 @@ app.post( '/loginSecurity',async function (req, res) {
 //login as Admin
 /**
  * @swagger
- * /loginAdmin:
- *   post:
- *     summary: Authenticate administrator personnel
- *     description: Login with identification number and password
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               idNumber:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       '200':
- *         description: Login successful
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *       '400':
- *         description: Invalid request body
- *       '401':
- *         description: Unauthorized - Invalid credentials
- *     tags: [Admin]
+* /loginAdmin:
+*   post:
+  *     summary: Admin Login
+  *     description: Authenticate as an administrator and receive a JWT token.
+  *     tags: [Admin]
+  *     requestBody:
+  *       required: true
+  *       content:
+  *         application/json:
+  *           schema:
+  *             type: object
+  *             properties:
+  *               idNumber:
+  *                 type: string
+  *               password:
+  *                 type: string
+  *     responses:
+  *       '200':
+  *         description: Login successful.
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: true
+  *                 message:
+  *                   type: string
+  *                   example: Login Success!
+  *                 token:
+  *                   type: string
+  *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  *       '401':
+  *         description: Unauthorized - Wrong password.
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: false
+  *                 message:
+  *                   type: string
+  *                   example: Wrong password!
+  *       '404':
+  *         description: Not Found - Username not exist.
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: false
+  *                 message:
+  *                   type: string
+  *                   example: Username not exist!
+  *       '500':
+  *         description: Internal server error occurred.
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: false
+  *                 message:
+  *                   type: string
+  *                   example: An error occurred.
  */
-app.post( '/loginAdmin',async function (req, res) {
-  let {idNumber, password} = req.body
+app.post('/loginAdmin', async function (req, res) {
+  let { idNumber, password } = req.body;
   const hashed = await generateHash(password);
-  await loginAdmin(res, idNumber, hashed)
-})
+  await loginAdmin(res, idNumber, hashed);
+});
+
+async function loginAdmin(res, idNumber, hashed) {
+  await client.connect();
+
+  try {
+    const exist = await client.db("assignmentCondo").collection("admin").findOne({ idNumber: idNumber });
+
+    if (exist) {
+      const passwordMatch = await bcrypt.compare(hashed, exist.password);
+
+      if (passwordMatch) {
+        console.log("Login Success!\nRole: " + exist.role);
+        logs(idNumber, exist.name, exist.role);
+        const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
+        res.status(200).json({ success: true, message: "Login Success!", token: token });
+      } else {
+        console.log("Wrong password!");
+        res.status(401).json({ success: false, message: "Wrong password!" });
+      }
+    } else {
+      console.log("Username not exist!");
+      res.status(404).json({ success: false, message: "Username not exist!" });
+    }
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({ success: false, message: "An error occurred" });
+  } finally {
+    client.close();
+  }
+}
+
 
 //register Host
 /**
@@ -937,7 +1013,7 @@ async function manageRole(idNumber, role) {
     await client.connect();
     
     const ownerCollection = client.db("assignmentCondo").collection("owner");
-    const desiredCollection = client.db("assignmentCondo").collection("desiredCollection");
+    const desiredCollection = client.db("assignmentCondo").collection("security");
 
     const user = await ownerCollection.findOne({ idNumber: idNumber });
 
