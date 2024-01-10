@@ -115,7 +115,7 @@ app.post('/retrieveVisitor', async function(req, res) {
  * /loginHost:
  *   post:
  *     summary: Login as Host
- *     description: Authenticate and login as a host.
+ *     description: Authenticate and login as a host using the provided ID number and password.
  *     tags:
  *       - Host
  *     requestBody:
@@ -130,23 +130,40 @@ app.post('/retrieveVisitor', async function(req, res) {
  *                 description: The unique ID number of the host.
  *               password:
  *                 type: string
- *                 description: The password associated with the host's account.
+ *                 description: The password of the host.
  *     responses:
  *       '200':
- *         description: Successfully authenticated. Returns a JWT token.
+ *         description: Successfully authenticated and logged in as a host.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 Token:
+ *                   type: string
+ *                   description: JWT token for the authenticated host.
+ *       '401':
+ *         description: Unauthorized - Incorrect password provided.
  *         content:
  *           text/plain:
  *             schema:
  *               type: string
- *               example: "Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZEN..."
- *       '401':
- *         description: Unauthorized - Incorrect password.
+ *               example: "Wrong password!"
  *       '404':
  *         description: Not Found - Host with the provided ID number does not exist.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Username not exist!"
  *       '500':
  *         description: Internal Server Error - Failed to authenticate due to server error.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Internal Server Error!"
  */
-
 app.post( '/loginHost',async function (req, res) {
   let {idNumber, password} = req.body;
   const hashed = await generateHash(password);
