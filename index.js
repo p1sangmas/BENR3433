@@ -706,10 +706,10 @@ async function retrieveVisitor(res, idNumber, password){
 async function viewVisitor(idNumberHost, role){
   var exist;
   await client.connect();
-  if(role == "Host" || role == "security"){
+  if(role == "Host"){
     exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumberHost: idNumberHost });
   }
-  else if(role == "visitor"){
+  else if(role == "visitor" || role == "security"){
     console.log("Forbidden!");
   }
   return exist;
