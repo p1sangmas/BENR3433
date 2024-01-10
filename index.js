@@ -426,19 +426,18 @@ app.post('/registerHost', async function (req, res) {
  *       '500':
  *         description: Internal server error occurred.
  */
-app.post('/registertestHost', async function (req, res){
-    const data = req.body
-    res.send(
-      registertestHost(
-        data.role,
-        data.name,
-        data.idNumber,
-        data.email,
-        data.password,
-        data.phoneNumber
-      )
-    )
-})
+app.post('/registertestHost', async function (req, res) {
+  const data = req.body;
+  await registertestHost(
+    data.role,
+    data.name,
+    data.idNumber,
+    data.email,
+    data.password,
+    data.phoneNumber,
+    res  // Pass the response object to the function
+  );
+});
 
 //View Visitor
 /**
@@ -1014,23 +1013,22 @@ async function registerHost(decoded, data, res) {
 }
 
 //CREATE(register Host)
-async function registertestHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber){
-  await client.connect()
-  const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: newidNumber})
-  if(exist){
-    console.log("Host has already registered")
-  }else{
-    await createListing1(client,
-      {
-        role: newrole,
-        name: newname,
-        idNumber: newidNumber,
-        email: newemail,
-        password: newpassword,
-        phoneNumber: newphoneNumber
-      }
-    );
-    console.log("Host registered sucessfully")
+async function registertestHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber, res) {
+  await client.connect();
+  const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: newidNumber });
+
+  if (exist) {
+    res.status(400).send("Host has already registered"); // Send message in response
+  } else {
+    await createListing1(client, {
+      role: newrole,
+      name: newname,
+      idNumber: newidNumber,
+      email: newemail,
+      password: newpassword,
+      phoneNumber: newphoneNumber
+    });
+    res.status(200).send("Host registered successfully"); // Send message in response
   }
 }
 
