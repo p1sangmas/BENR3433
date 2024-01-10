@@ -366,7 +366,7 @@ app.post('/registerHost', async function (req, res) {
   let header = req.headers.authorization;
   let token = header.split(' ')[1];
   jwt.verify(token, privatekey, async function(err, decoded) {
-    if (decoded && decoded.role === "security") {
+    if (decoded.role === "security") {
       const data = req.body;
       const result = await registerHost(
         data.role,
