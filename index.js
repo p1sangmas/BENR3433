@@ -523,7 +523,7 @@ app.post('/viewVisitor', async function(req, res) {
  *     produces:
  *       - "application/json"
  *   securityDefinitions:
- *     JWT:
+ *     bearerAuth:
  *       type: "apiKey"
  *       name: "Authorization"
  *       in: "header"
@@ -531,12 +531,11 @@ app.post('/viewVisitor', async function(req, res) {
 app.post('/viewHost', async function(req, res){
   var token = req.header('Authorization').split(" ")[1];
   try {
-      var decoded = jwt.verify(token, privatekey);
-      console.log(decoded.role);
-      res.send(await viewHost(decoded.idNumber, decoded.role));
-    } catch(err) {
-      res.send("Error!");
-    }
+    var decoded = jwt.verify(token, privatekey);
+    res.send(await viewHost(decoded.idNumber, decoded.role, res)); // Pass res to the function
+  } catch(err) {
+    res.status(401).send("Unauthorized"); // Send Unauthorized status if JWT verification fails
+  }
 });
 
 //issue pass visitor
@@ -930,15 +929,17 @@ async function viewVisitor(idNumberHost, role, res) {
 }
 
 //READ(view all visitors)
-async function viewHost(idNumber, role){
+async function viewHost(idNumber, role, res){ // Add res as a parameter
   var exist;
   await client.connect();
-  if(role == "admin"){
+  
+  if(role === "admin"){
     exist = await client.db("assignmentCondo").collection("owner").find({}).toArray();
   }
-  else if(role == "security" || role == "visitor"){
-    console.log("Visitor not exist!");
+  else if(role === "security" || role === "visitor"){
+    res.status(403).send("Forbidden! You don't have permission to access this."); // Send Forbidden status if role is not admin
   }
+  
   return exist;
 }
 
