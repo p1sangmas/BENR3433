@@ -466,13 +466,6 @@ app.post('/registertestHost', async function (req, res) {
  *       - Host & Security
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: JWT token for authentication
  *     requestBody:
  *       required: false
  *     responses:
@@ -509,13 +502,6 @@ app.post('/viewVisitor', async function(req, res) {
  *     summary: "View hosts"
  *     description: "Retrieve hosts based on user role"
  *     tags: [Admin]
- *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: JWT token for authentication
  *     security:
  *       - bearerAuth: []
  *     responses:
