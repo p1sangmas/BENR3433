@@ -483,15 +483,14 @@ app.post('/registertestHost', async function (req, res) {
  *       name: "Authorization"
  *       in: "header"
  */
-app.post('/viewVisitor', async function(req, res){
-  var token = req.header('Authorization').split(" ")[1];
+app.post('/viewVisitor', async function(req, res) {
+  const token = req.header('Authorization').split(" ")[1];
   try {
-      var decoded = jwt.verify(token, privatekey);
-      console.log(decoded.role);
-      res.send(await viewVisitor(decoded.idNumber, decoded.role));
-    } catch(err) {
-      res.send("Error!");
-    }
+    const decoded = jwt.verify(token, privatekey);
+    return await viewVisitor(decoded.idNumber, decoded.role, res);
+  } catch(err) {
+    return res.status(401).send("Unauthorized"); // Send unauthorized error in response
+  }
 });
 
 //View Host
@@ -903,16 +902,23 @@ async function retrieveVisitor(res, idNumber, password) {
 }
 
 //READ(view all visitors)
-async function viewVisitor(idNumberHost, role){
-  var exist;
+async function viewVisitor(idNumberHost, role, res) {
   await client.connect();
-  if(role == "Host"){
+  let exist;
+
+  if (role === "Host") {
     exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumberHost: idNumberHost });
+    if (!exist) {
+      return res.status(404).send("No visitors found for this host."); // Send not found error in response
+    }
+    return res.status(200).send(exist); // Send existing visitor details in response
+  } 
+  else if (role === "visitor" || role === "security") {
+    return res.status(403).send("Forbidden! You don't have permission to view this information."); // Send forbidden error in response
+  } 
+  else {
+    return res.status(400).send("Invalid role!"); // Send bad request error in response for invalid role
   }
-  else if(role == "visitor" || role == "security"){
-    console.log("Forbidden!");
-  }
-  return exist;
 }
 
 //READ(view all visitors)
