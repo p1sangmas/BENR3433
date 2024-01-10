@@ -259,7 +259,7 @@ app.post('/loginAdmin', async function (req, res) {
  *   post:
  *     summary: Register an Host
  *     description: Register a new Host with security role
- *     tags: [Security]
+ *     tags: [Host]
  *     requestBody:
  *       required: true
  *       content:
@@ -375,65 +375,38 @@ app.post('/registertestHost', async function (req, res){
  * @swagger
  * /viewVisitor:
  *   post:
- *     summary: View Visitor Details
- *     description: Retrieve visitor details based on the provided token and role.
+ *     summary: "View visitors"
+ *     description: "Retrieve visitors based on user role"
  *     tags:
  *       - Host & Security
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       '200':
- *         description: Successfully retrieved visitor details.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 idNumber:
- *                   type: string
- *                   description: The unique ID number of the visitor.
- *                 name:
- *                   type: string
- *                   description: The name of the visitor.
- *                 // Add other properties as needed based on your visitor schema
- *       '403':
- *         description: Forbidden - The role does not have permission to view visitor details or visitor not found.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Forbidden!"
- *       '500':
- *         description: Internal Server Error - Failed to retrieve visitor details due to server error.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Internal Server Error!"
+ *         description: "Visitors retrieved successfully"
+ *       '400':
+ *         description: "Invalid token or error in retrieving visitors"
  *       '401':
- *         description: Unauthorized - Invalid or expired token.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Error!"
+ *         description: "Unauthorized - Invalid token or insufficient permissions"
+ *     consumes:
+ *       - "application/json"
+ *     produces:
+ *       - "application/json"
+ *   securityDefinitions:
+ *     JWT:
+ *       type: "apiKey"
+ *       name: "Authorization"
+ *       in: "header"
  */
-app.post('/viewVisitor', async function(req, res) {
+app.post('/viewVisitor', async function(req, res){
   var token = req.header('Authorization').split(" ")[1];
   try {
-    var decoded = jwt.verify(token, privatekey);
-    console.log(decoded.role);
-    const result = await viewVisitor(decoded.idNumber, decoded.role);
-    
-    // Check if the result is a string (error message) or an object (visitor details)
-    if (typeof result === 'string') {
-      res.status(403).send(result); // Send forbidden or visitor not found error
-    } else {
-      res.send(result); // Send visitor details
+      var decoded = jwt.verify(token, privatekey);
+      console.log(decoded.role);
+      res.send(await viewVisitor(decoded.idNumber, decoded.role));
+    } catch(err) {
+      res.send("Error!");
     }
-  } catch(err) {
-    res.status(500).send("Internal Server Error!"); // Send internal server error
-  }
 });
 
 //View Host
@@ -441,67 +414,37 @@ app.post('/viewVisitor', async function(req, res) {
  * @swagger
  * /viewHost:
  *   post:
- *     summary: View Host Details
- *     description: Retrieve host details based on the provided token and role. Only admins have access to view all hosts.
- *     tags:
- *       - Admin
+ *     summary: "View hosts"
+ *     description: "Retrieve hosts based on user role"
+ *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       '200':
- *         description: Successfully retrieved host details or list of hosts.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   idNumber:
- *                     type: string
- *                     description: The unique ID number of the host.
- *                   name:
- *                     type: string
- *                     description: The name of the host.
- *                   // Add other properties as needed based on your host schema
- *       '403':
- *         description: Forbidden - The role does not have permission to view hosts or is not an admin.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Forbidden! Only admins can view hosts."
- *       '500':
- *         description: Internal Server Error - Failed to retrieve host details due to server error.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Internal Server Error!"
+ *         description: "Hosts retrieved successfully"
+ *       '400':
+ *         description: "Invalid token or error in retrieving hosts"
  *       '401':
- *         description: Unauthorized - Invalid or expired token.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Error!"
+ *         description: "Unauthorized - Invalid token or insufficient permissions"
+ *     consumes:
+ *       - "application/json"
+ *     produces:
+ *       - "application/json"
+ *   securityDefinitions:
+ *     JWT:
+ *       type: "apiKey"
+ *       name: "Authorization"
+ *       in: "header"
  */
-app.post('/viewHost', async function(req, res) {
+app.post('/viewHost', async function(req, res){
   var token = req.header('Authorization').split(" ")[1];
   try {
-    var decoded = jwt.verify(token, privatekey);
-    console.log(decoded.role);
-    const result = await viewHost(decoded.idNumber, decoded.role);
-    
-    // Check if the result is a string (error message) or an array (hosts)
-    if (typeof result === 'string') {
-      res.status(403).send(result); // Send forbidden or invalid role error
-    } else {
-      res.send(result); // Send host details
+      var decoded = jwt.verify(token, privatekey);
+      console.log(decoded.role);
+      res.send(await viewHost(decoded.idNumber, decoded.role));
+    } catch(err) {
+      res.send("Error!");
     }
-  } catch(err) {
-    res.status(500).send("Internal Server Error!"); // Send internal server error
-  }
 });
 
 //issue pass visitor
@@ -852,69 +795,53 @@ async function createListing2(client, newListing){
 }
 
 //READ(retrieve pass as visitor)
-async function retrieveVisitor(res, idNumber, password) {
+async function retrieveVisitor(res, idNumber, password){
   await client.connect();
-  const exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumber: idNumber });
-  
-  if (exist) {
-    const passwordMatch = await bcrypt.compare(password, exist.password);
-    if (passwordMatch) {
-      console.log("Welcome!");
-      const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
-      res.send({
-        "Token": token,
-        "Visitor Info": exist
-      });
-      await logs(idNumber, exist.name, exist.role);
-    } else {
-      // Send wrong password error in response
-      res.status(401).send("Wrong password!");
+    const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: idNumber});
+    if(exist){
+        if(bcrypt.compare(password,await exist.password)){
+        console.log("Welcome!");
+        token = jwt.sign({ idNumber: idNumber, role: exist.role}, privatekey);
+        res.send({
+          "Token": token,
+          "Visitor Info": exist
+        });
+        
+        res.send(exist);
+        await logs(id, exist.name, exist.role);
+        }else{
+            console.log("Wrong password!")
+        }
+    }else{
+        console.log("Visitor not exist!");
     }
-  } else {
-    // Send visitor not found error in response
-    res.status(404).send("Visitor not exist!");
-  }
 }
 
-
 //READ(view all visitors)
-async function viewVisitor(idNumberHost, role) {
+async function viewVisitor(idNumberHost, role){
+  var exist;
   await client.connect();
-  let exist;
-  
-  if (role === "Host") {
+  if(role == "Host"){
     exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumberHost: idNumberHost });
-    if (!exist) {
-      // Send visitor not found error in response
-      return "Visitor not found!";
-    }
-  } else if (role === "visitor" || role === "security") {
-    // Send forbidden error in response
-    return "Forbidden!";
   }
-  
+  else if(role == "visitor" || role == "security"){
+    console.log("Forbidden!");
+  }
   return exist;
 }
-
 
 //READ(view all visitors)
-async function viewHost(idNumber, role) {
+async function viewHost(idNumber, role){
+  var exist;
   await client.connect();
-  let exist;
-
-  if (role === "admin") {
+  if(role == "admin"){
     exist = await client.db("assignmentCondo").collection("owner").find({}).toArray();
-  } else if (role === "security" || role === "visitor") {
-    // Return forbidden error message
-    return "Forbidden! Only admins can view hosts.";
-  } else {
-    // Return invalid role error message
-    return "Invalid role!";
   }
-  
+  else if(role == "security" || role == "visitor"){
+    console.log("Visitor not exist!");
+  }
   return exist;
 }
-
 
 //READ(login as Host)
 async function loginHost(res, idNumber, hashed) {
@@ -993,54 +920,46 @@ async function loginAdmin(res, idNumber, hashed) {
 
 
 //CREATE(register Host)
-async function registerHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber) {
-  await client.connect();
-  
-  const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: newidNumber });
-
-  if (exist) {
-    // Send response message if host has already registered
-    return "Host has already registered";
-  } else {
-    await createListing1(client, {
-      role: newrole,
-      name: newname,
-      idNumber: newidNumber,
-      email: newemail,
-      password: newpassword,
-      phoneNumber: newphoneNumber
-    });
-    
-    // Send response message if host registered successfully
-    return "Host registered successfully";
+async function registerHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber){
+  await client.connect()
+  const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: newidNumber})
+  if(exist){
+    console.log("Host has already registered")
+  }else{
+    await createListing1(client,
+      {
+        role: newrole,
+        name: newname,
+        idNumber: newidNumber,
+        email: newemail,
+        password: newpassword,
+        phoneNumber: newphoneNumber
+      }
+    );
+    console.log("Host registered sucessfully")
   }
 }
-
 
 //CREATE(register Host)
-async function registertestHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber) {
-  await client.connect();
-  
-  const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: newidNumber });
-
-  if (exist) {
-    // Return a message if the host has already registered
-    return "Host has already registered";
-  } else {
-    await createListing1(client, {
-      role: newrole,
-      name: newname,
-      idNumber: newidNumber,
-      email: newemail,
-      password: newpassword,
-      phoneNumber: newphoneNumber
-    });
-    
-    // Return a message if the host is registered successfully
-    return "Host registered successfully";
+async function registertestHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber){
+  await client.connect()
+  const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: newidNumber})
+  if(exist){
+    console.log("Host has already registered")
+  }else{
+    await createListing1(client,
+      {
+        role: newrole,
+        name: newname,
+        idNumber: newidNumber,
+        email: newemail,
+        password: newpassword,
+        phoneNumber: newphoneNumber
+      }
+    );
+    console.log("Host registered sucessfully")
   }
 }
-
 
 //CREATE(register Visitor)
 async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate, 
