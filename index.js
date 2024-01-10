@@ -486,7 +486,6 @@ app.post('/viewVisitor', async function(req, res) {
  *               type: string
  *               example: "Error!"
  */
-
 app.post('/viewHost', async function(req, res) {
   var token = req.header('Authorization').split(" ")[1];
   try {
