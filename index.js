@@ -703,14 +703,14 @@ async function retrieveVisitor(res, idNumber, password){
 }
 
 //READ(view all visitors)
-async function viewVisitor(idNumber, role){
+async function viewVisitor(idNumberHost, role){
   var exist;
   await client.connect();
   if(role == "Host" || role == "security"){
-    exist = await client.db("assignmentCondo").collection("visitor").find({}).toArray();
+    exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumberHost: idNumberHost });
   }
   else if(role == "visitor"){
-    exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: idNumber});
+    console.log("Forbidden!");
   }
   return exist;
 }
