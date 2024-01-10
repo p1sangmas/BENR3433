@@ -578,41 +578,41 @@ app.post('/retrievePhoneNumber', async function (req, res){
 // Manage User Role
 /**
  * @swagger
- * /manageRole:
- *   post:
- *     summary: Manage user role
- *     description: Manage the role of a user by updating the role associated with the provided ID number (accessible to administrators).
- *     tags: [Admin]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               idNumber:
- *                 type: string
- *               role:
- *                 type: string
- *     responses:
- *       '200':
- *         description: Role managed successfully.
- *         schema:
- *           type: object
- *           properties:
- *             message:
- *               type: string
- *               example: Role managed successfully!
- *       '401':
- *         description: Unauthorized - Invalid or missing token.
- *       '403':
- *         description: Forbidden - User does not have the necessary permissions.
- *       '404':
- *         description: Username with the provided ID number does not exist in the database.
- *       '500':
- *         description: Internal server error occurred.
+  * /manageRole:
+  *   post:
+  *     summary: Manage user role
+  *     description: Manage the role of a user by updating the role associated with the provided ID number (accessible to administrators).
+  *     tags: [Admin]
+  *     security:
+  *       - bearerAuth: []
+  *     requestBody:
+  *       required: true
+  *       content:
+  *         application/json:
+  *           schema:
+  *             type: object
+  *             properties:
+  *               idNumber:
+  *                 type: string
+  *               role:
+  *                 type: string
+  *     responses:
+  *       '200':
+  *         description: Role managed successfully.
+  *         schema:
+  *           type: object
+  *           properties:
+  *             message:
+  *               type: string
+  *               example: Role managed successfully!
+  *       '401':
+  *         description: Unauthorized - Invalid or missing token.
+  *       '403':
+  *         description: Forbidden - User does not have the necessary permissions.
+  *       '404':
+  *         description: Username with the provided ID number does not exist in the database.
+  *       '500':
+  *         description: Internal server error occurred.
  */
 app.post('/manageRole', async function (req, res){
   var token = req.header('Authorization').split(" ")[1];
@@ -640,6 +640,7 @@ app.post('/manageRole', async function (req, res){
     res.status(403).send("Access Denied");
   }
 });
+
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
@@ -876,16 +877,30 @@ async function retrievePhoneNumber(idNumber){
   }
 }
 
-async function manageRole(idNumber, role){
-  await client.connect()
-  const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: idNumber})
-  if(exist){
-    await client.db("assignmentCondo").collection("owner").updateOne({idNumber: idNumber}, {$set: {role: role}})
-    console.log("Role managed successfully!")
-  }else{
-    console.log("Username not exist!")
+async function manageRole(idNumber, role) {
+  await client.connect();
+  const ownerCollection = client.db("assignmentCondo").collection("owner");
+  const desiredCollection = client.db("assignmentCondo").collection("desiredCollection");
+
+  const user = await ownerCollection.findOne({ idNumber: idNumber });
+
+  if (user) {
+    // Update the role in the "owner" collection
+    await ownerCollection.updateOne({ idNumber: idNumber }, { $set: { role: role } });
+    console.log("Role managed successfully!");
+
+    // Insert the user's data into the desired collection if it doesn't exist there
+    const userInDesiredCollection = await desiredCollection.findOne({ idNumber: idNumber });
+
+    if (!userInDesiredCollection) {
+      await desiredCollection.insertOne(user);
+      console.log("User data added to the desired collection.");
+    }
+  } else {
+    console.log("Username not exist!");
   }
 }
+
 
 
 //DELETE(delete visitor)
