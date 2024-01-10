@@ -878,28 +878,41 @@ async function retrievePhoneNumber(idNumber){
 }
 
 async function manageRole(idNumber, role) {
-  await client.connect();
-  const ownerCollection = client.db("assignmentCondo").collection("owner");
-  const desiredCollection = client.db("assignmentCondo").collection("desiredCollection");
+  try {
+    await client.connect();
+    
+    const ownerCollection = client.db("assignmentCondo").collection("owner");
+    const desiredCollection = client.db("assignmentCondo").collection("desiredCollection");
 
-  const user = await ownerCollection.findOne({ idNumber: idNumber });
+    const user = await ownerCollection.findOne({ idNumber: idNumber });
 
-  if (user) {
-    // Update the role in the "owner" collection
-    await ownerCollection.updateOne({ idNumber: idNumber }, { $set: { role: role } });
-    console.log("Role managed successfully!");
+    if (user) {
+      // Update the role in the "owner" collection
+      await ownerCollection.updateOne({ idNumber: idNumber }, { $set: { role: role } });
+      console.log("Role managed successfully!");
 
-    // Insert the user's data into the desired collection if it doesn't exist there
-    const userInDesiredCollection = await desiredCollection.findOne({ idNumber: idNumber });
+      // Insert the user's data into the desired collection if it doesn't exist there
+      const userInDesiredCollection = await desiredCollection.findOne({ idNumber: idNumber });
 
-    if (!userInDesiredCollection) {
-      await desiredCollection.insertOne(user);
-      console.log("User data added to the desired collection.");
+      if (!userInDesiredCollection) {
+        await desiredCollection.insertOne(user);
+        console.log("User data added to the desired collection.");
+      }
+
+      // Delete the user from the old collection
+      await ownerCollection.deleteOne({ idNumber: idNumber });
+      console.log("User data deleted from the old collection.");
+    } else {
+      console.log("Username not in the database!");
     }
-  } else {
-    console.log("Username not exist!");
+  } catch (error) {
+    console.log("Error:", error.message);
+  } finally {
+    client.close();
   }
 }
+
+
 
 
 
