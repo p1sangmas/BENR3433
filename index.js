@@ -301,9 +301,12 @@ app.post('/loginAdmin', async function (req, res) {
  * @swagger
  * /registerHost:
  *   post:
- *     summary: Register an Host
- *     description: Register a new Host with security role
- *     tags: [Host]
+ *     summary: Register a Host
+ *     description: Register a new host if the requester has security access.
+ *     tags:
+ *       - Security
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -313,48 +316,73 @@ app.post('/loginAdmin', async function (req, res) {
  *             properties:
  *               role:
  *                 type: string
+ *                 description: Role of the host.
  *               name:
  *                 type: string
+ *                 description: Name of the host.
  *               idNumber:
  *                 type: string
+ *                 description: ID number of the host.
  *               email:
  *                 type: string
+ *                 description: Email address of the host.
  *               password:
  *                 type: string
+ *                 description: Password of the host.
  *               phoneNumber:
  *                 type: string
- *     security:
- *       - bearerAuth: []
+ *                 description: Phone number of the host.
  *     responses:
  *       '200':
- *         description: Host registered successfully
- *       '401':
- *         description: Unauthorized - Invalid or missing token
+ *         description: Host registered successfully.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Host registered successfully"
  *       '403':
- *         description: Forbidden - User does not have access to register an Host
+ *         description: Forbidden - User does not have the necessary permissions.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "You have no access to register a Host!"
+ *       '409':
+ *         description: Conflict - Host with the provided ID number already exists.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Host has already registered"
+ *       '500':
+ *         description: Internal Server Error - Failed to register the host due to server error.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "Internal Server Error!"
  */
-app.post('/registerHost', async function (req, res){
+app.post('/registerHost', async function (req, res) {
   let header = req.headers.authorization;
   let token = header.split(' ')[1];
   jwt.verify(token, privatekey, async function(err, decoded) {
-    console.log(decoded)
-    if (await decoded.role == "security"){
-      const data = req.body
-      res.send(
-        registerHost(
-          data.role,
-          data.name,
-          data.idNumber,
-          data.email,
-          data.password,
-          data.phoneNumber
-        )
-      )
-    }else{
-      console.log("You have no access to register an Host!")
+    if (decoded && decoded.role === "security") {
+      const data = req.body;
+      const result = await registerHost(
+        data.role,
+        data.name,
+        data.idNumber,
+        data.email,
+        data.password,
+        data.phoneNumber
+      );
+      res.send(result);
+    } else {
+      res.status(403).send("You have no access to register a Host!"); // Send forbidden error in response
     }
-})
-})
+  });
+});
+
 
 //register Host without security approval
 /**
@@ -964,23 +992,22 @@ async function loginAdmin(res, idNumber, hashed) {
 
 
 //CREATE(register Host)
-async function registerHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber){
-  await client.connect()
-  const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: newidNumber})
-  if(exist){
-    console.log("Host has already registered")
-  }else{
-    await createListing1(client,
-      {
-        role: newrole,
-        name: newname,
-        idNumber: newidNumber,
-        email: newemail,
-        password: newpassword,
-        phoneNumber: newphoneNumber
-      }
-    );
-    console.log("Host registered sucessfully")
+async function registerHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber) {
+  await client.connect();
+  const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: newidNumber });
+
+  if (exist) {
+    return "Host has already registered"; // Return message to be sent in response
+  } else {
+    await createListing1(client, {
+      role: newrole,
+      name: newname,
+      idNumber: newidNumber,
+      email: newemail,
+      password: newpassword,
+      phoneNumber: newphoneNumber
+    });
+    return "Host registered successfully"; // Return message to be sent in response
   }
 }
 
