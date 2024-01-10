@@ -682,63 +682,84 @@ app.post('/deleteVisitor', async function (req, res){
  * @swagger
  * /retrievePhoneNumber:
  *   post:
- *     summary: Retrieve host phone number
- *     description: Retrieve the phone number of a host based on the provided ID number (accessible to security personnel).
- *     tags: [Security]
+ *     summary: "Retrieve Phone Number for Security Role"
+ *     description: "Retrieve the phone number of a host based on provided ID number if the user role is 'security'."
+ *     tags:
+ *       - Security
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               idNumber:
- *                 type: string
- *     responses:
- *       '200':
- *         description: Successfully retrieved the host's phone number.
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: JWT token for authentication
+ *       - in: body
+ *         name: idNumber
+ *         required: true
  *         schema:
  *           type: object
  *           properties:
- *             phoneNumber:
+ *             idNumber:
  *               type: string
+ *     responses:
+ *       '200':
+ *         description: "Successfully retrieved the phone number."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 phoneNumber:
+ *                   type: string
  *       '401':
- *         description: Unauthorized - Invalid or expired token.
+ *         description: "Unauthorized - Invalid or expired token."
  *       '403':
- *         description: Forbidden - User does not have the necessary permissions.
+ *         description: "Forbidden - User does not have the necessary permissions."
  *       '404':
- *         description: Visitor with the provided ID number does not exist in the database.
- *       '500':
- *         description: Internal server error occurred.
+ *         description: "Not Found - Visitor with the provided ID number does not exist in the database."
+ *       '400':
+ *         description: "Bad Request - Invalid or no token provided."
+ *     consumes:
+ *       - "application/json"
+ *     produces:
+ *       - "application/json"
+ *   securityDefinitions:
+ *     bearerAuth:
+ *       type: apiKey
+ *       name: Authorization
+ *       scheme: bearer
+ *       in: header
  */
 app.post('/retrievePhoneNumber', async function (req, res){
-  var token = req.header('Authorization').split(" ")[1];
-  let decoded;
+  var token = req.header('Authorization') ? req.header('Authorization').split(" ")[1] : null;
 
-  try {
-    decoded = jwt.verify(token, privatekey);
-  } catch(err) {
-    console.log("Error decoding token:", err.message);
-    return res.status(401).send("Unauthorized");
+  if (!token) {
+    return res.status(400).send("Invalid or no token"); // Send "Invalid or no token" response
   }
 
-  if (decoded && (decoded.role === "security")){
-    const { idNumber } = req.body;
-
-    try {
-      const phoneNumberResponse = await retrievePhoneNumber(idNumber);
-      // Send the phone number in the response body
-      res.status(200).send(phoneNumberResponse);
-    } catch (error) {
-      // Handle errors such as visitor not found
-      console.log(error.message);
-      res.status(404).send(error.message);
+  try {
+    let decoded = jwt.verify(token, privatekey);
+    
+    if (decoded && decoded.role === "security") {
+      const { idNumber } = req.body;
+      
+      try {
+        const phoneNumberResponse = await retrievePhoneNumber(idNumber);
+        // Send the phone number in the response body
+        res.status(200).send(phoneNumberResponse);
+      } catch (error) {
+        // Handle errors such as visitor not found
+        res.status(404).send(error.message);
+      }
+    } else {
+      // Send "Access Denied" response
+      res.status(403).send("Access Denied");
     }
-  } else {
-    console.log("Access Denied!");
-    res.status(403).send("Access Denied");
+  } catch(err) {
+    // Send "Unauthorized" response
+    res.status(401).send("Unauthorized");
   }
 });
 
@@ -1118,14 +1139,14 @@ async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, 
 
 //READ(retrieve phone number for visitor)
 async function retrievePhoneNumber(idNumber){
-  await client.connect()
-  const exist = await client.db("assignmentCondo").collection("host").findOne({idNumber: idNumber})
+  await client.connect();
+  const exist = await client.db("assignmentCondo").collection("host").findOne({idNumber: idNumber});
   
   if(exist){
     // Return the phone number in the response body
     return { phoneNumber: exist.TelephoneNumber };
   } else {
-    // Handle the case where the visitor does not exist
+    // Throw an error if the visitor does not exist
     throw new Error("Visitor does not exist.");
   }
 }
