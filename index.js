@@ -541,7 +541,7 @@ app.post('/viewHost', async function(req, res){
     var decoded = jwt.verify(token, privatekey);
     res.send(await viewHost(decoded.idNumber, decoded.role, res)); // Pass res to the function
   } catch(err) {
-    res.status(401).send("Unauthorized"); // Send Unauthorized status if JWT verification fails
+    res.status(401).send("Invalid token"); // Send "Invalid token" instead of "Unauthorized"
   }
 });
 
