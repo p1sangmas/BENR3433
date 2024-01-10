@@ -485,7 +485,15 @@ app.post('/registertestHost', async function (req, res) {
  *         description: Bad Request - Invalid role provided in the token
  */
 app.post('/viewVisitor', async function(req, res) {
-  const token = req.header('Authorization').split(" ")[1];
+  const header = req.header('Authorization');
+  
+  // Check if Authorization header exists
+  if (!header || !header.startsWith("Bearer ")) {
+    return res.status(401).send("Invalid or no token"); // Send message if token is missing or malformed
+  }
+
+  const token = header.split(" ")[1];
+  
   try {
     const decoded = jwt.verify(token, privatekey);
     return await viewVisitor(decoded.idNumber, decoded.role, res);
@@ -522,14 +530,23 @@ app.post('/viewVisitor', async function(req, res) {
  *       in: "header"
  */
 app.post('/viewHost', async function(req, res){
-  var token = req.header('Authorization').split(" ")[1];
+  const header = req.header('Authorization');
+  
+  // Check if Authorization header exists
+  if (!header || !header.startsWith("Bearer ")) {
+    return res.status(401).send("Invalid or no token"); // Send message if token is missing or malformed
+  }
+
+  const token = header.split(" ")[1];
+  
   try {
-    var decoded = jwt.verify(token, privatekey);
-    res.send(await viewHost(decoded.idNumber, decoded.role, res)); // Pass res to the function
+    const decoded = jwt.verify(token, privatekey);
+    return res.send(await viewHost(decoded.idNumber, decoded.role)); // Removed 'res' as it's not needed for the function
   } catch(err) {
-    res.status(401).send("Invalid token"); // Send "Invalid token" instead of "Unauthorized"
+    return res.status(401).send("Invalid token"); // Send "Invalid token" instead of "Unauthorized"
   }
 });
+
 
 //issue pass visitor
 /**
