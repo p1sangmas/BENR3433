@@ -51,62 +51,47 @@ app.use(express.json());
  * @swagger
  * /retrieveVisitor:
  *   post:
- *     summary: Retrieve Visitor Details
- *     description: Retrieve visitor details based on the provided ID number and password.
- *     tags:
+ *     summary: "Retrieve Visitor Information"
+ *     description: "Retrieve visitor information using the provided idNumber."
+ *     tags: 
  *       - Visitor
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               idNumber:
- *                 type: string
- *                 description: The unique ID number of the visitor.
- *               password:
- *                 type: string
- *                 description: The password of the visitor.
+ *     parameters:
+ *       - in: "body"
+ *         name: "visitorDetails"
+ *         description: "Visitor details including idNumber."
+ *         required: true
+ *         schema:
+ *           type: "object"
+ *           properties:
+ *             idNumber:
+ *               type: "string"
+ *               description: "ID number of the visitor."
  *     responses:
- *       '200':
- *         description: Successfully retrieved visitor details and generated token.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 Token:
- *                   type: string
- *                   description: JWT token for the visitor.
- *                 Visitor Info:
- *                   type: object
- *                   description: Details of the visitor.
- *       '401':
- *         description: Unauthorized - Incorrect password provided.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Wrong password!"
- *       '404':
- *         description: Not Found - Visitor with the provided ID number does not exist.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Visitor not exist!"
- *       '500':
- *         description: Internal Server Error - Failed to retrieve visitor details due to server error.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Internal Server Error!"
+ *       200:
+ *         description: "Successfully retrieved visitor information along with a JWT token."
+ *         schema:
+ *           type: "object"
+ *           properties:
+ *             Token:
+ *               type: "string"
+ *               description: "JWT token for authentication."
+ *             Visitor Info:
+ *               type: "object"
+ *               description: "Details of the retrieved visitor."
+ *       404:
+ *         description: "Visitor not found based on the provided idNumber."
+ *       401:
+ *         description: "Unauthorized - Incorrect or missing credentials."
+ *       500:
+ *         description: "Internal server error occurred."
+ *     consumes:
+ *       - "application/json"
+ *     produces:
+ *       - "application/json"
  */
 app.post('/retrieveVisitor', async function(req, res) {
-  const { idNumber, password } = req.body;
-  retrieveVisitor(res, idNumber, password);
+  const { idNumber } = req.body;
+  retrieveVisitor(res, idNumber);
 });
 
 //login as Host
@@ -926,23 +911,18 @@ async function createListing2(client, newListing){
 }
 
 //READ(retrieve pass as visitor)
-async function retrieveVisitor(res, idNumber, password) {
+async function retrieveVisitor(res, idNumber) {
   await client.connect();
   const exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumber: idNumber });
 
   if (exist) {
-    const passwordMatch = await bcrypt.compare(password, exist.password);
-    if (passwordMatch) {
-      console.log("Welcome!"); // This line is kept as a log; you may remove or change it if you want.
-      const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
-      res.send({
-        "Token": token,
-        "Visitor Info": exist
-      });
-      await logs(idNumber, exist.name, exist.role); // Assuming the logs function is correct; you may need to adjust parameters if needed.
-    } else {
-      res.status(401).send("Wrong password!"); // Send wrong password message in response
-    }
+    // Here, instead of checking for password, simply return visitor info if the visitor exists.
+    const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
+    res.send({
+      "Token": token,
+      "Visitor Info": exist
+    });
+    await logs(idNumber, exist.name, exist.role); // Assuming the logs function is correct; you may need to adjust parameters if needed.
   } else {
     res.status(404).send("Visitor not exist!"); // Send visitor not exist message in response
   }
