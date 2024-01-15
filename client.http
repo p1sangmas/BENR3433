@@ -56,7 +56,7 @@ Content-Type: application/json
 
 ###
 
-POST http://localhost:3000/createpassVisitor
+POST http://localhost:3000/issuepassVisitor
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEyIiwicm9sZSI6Ikhvc3QiLCJpYXQiOjE3MDQ1NDg4OTN9.0axdDfX7nE_lmsrunrPe5kEBp-YrAiKXcVJSkPK93-0
 
@@ -76,7 +76,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwM
   "ethnicity": "Ethnicity",
   "photoAttributes": "Photo Attributes",
   "passNumber": "Pass Number",
-  "password": "Password"
+  "password": "Password",
+  "idNumberHost": "Host ID"
 }
 
 ###

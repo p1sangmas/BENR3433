@@ -613,13 +613,13 @@ app.post('/issuepassVisitor', async function(req, res){
       const {
           role, name, idNumber, documentType, gender, birthDate, age, 
           documentExpiry, company, TelephoneNumber, vehicleNumber, 
-          category, ethnicity, photoAttributes, passNumber, password
+          category, ethnicity, photoAttributes, passNumber, password, idNumberHost
       } = req.body;
 
       await issuepassVisitor(role, name, idNumber, documentType, gender, birthDate, 
                               age, documentExpiry, company, TelephoneNumber, 
                               vehicleNumber, category, ethnicity, photoAttributes, 
-                              passNumber, password);
+                              passNumber, password, idNumberHost);
   } else {
       console.log("Access Denied!");
       res.status(403).send("Access Denied"); // Send a 403 Forbidden response
@@ -1062,7 +1062,7 @@ async function registertestHost(newrole, newname, newidNumber, newemail, newpass
 //CREATE(register Visitor)
 async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate, 
                         newage, newdocumentExpiry, newcompany, newTelephoneNumber, newvehicleNumber,
-                        newcategory, newethnicity, newphotoAttributes, newpassNumber, password, res){
+                        newcategory, newethnicity, newphotoAttributes, newpassNumber, password, idNumberHost, res){
   //TODO: Check if username exist
   await client.connect();
   const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: newidNumber});
@@ -1087,7 +1087,8 @@ async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, 
           ethnicity: newethnicity,
           photoAttributes: newphotoAttributes,
           passNumber: newpassNumber,
-          password: password 
+          password: password,
+          idNumberHost: idNumberHost 
         }
       );
       res.status(200).send("Registered successfully!"); // Send a 200 OK status
