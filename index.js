@@ -991,7 +991,7 @@ async function loginAdmin(res, idNumber, hashed) {
     const exist = await client.db("assignmentCondo").collection("admin").findOne({ idNumber: idNumber });
 
     if (exist) {
-      const passwordMatch = await bcrypt.compare(hashed, exist.password);
+      const passwordMatch = await bcrypt.compare(exist.password, hashed);
 
       if (passwordMatch) {
         console.log("Login Success!\nRole: " + exist.role);
