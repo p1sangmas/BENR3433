@@ -537,12 +537,10 @@ app.post('/viewHost', async function(req, res){
  * @swagger
  * /issuepassVisitor:
  *   post:
- *     summary: Create a visitor pass
- *     description: Create a new visitor pass (accessible to Hosts and security personnel)
+ *     summary: "Issue pass to visitor"
+ *     description: "Issue a pass to a visitor based on the user role (Host or Security)."
  *     tags:
- *       - Host & Security 
- *     security:
- *       - bearerAuth: []
+ *       - Host & Security
  *     requestBody:
  *       required: true
  *       content:
@@ -552,45 +550,66 @@ app.post('/viewHost', async function(req, res){
  *             properties:
  *               role:
  *                 type: string
+ *                 description: "Role of the visitor."
  *               name:
  *                 type: string
+ *                 description: "Name of the visitor."
  *               idNumber:
  *                 type: string
+ *                 description: "ID number of the visitor."
  *               documentType:
  *                 type: string
+ *                 description: "Type of document used by the visitor (e.g., passport)."
  *               gender:
  *                 type: string
+ *                 description: "Gender of the visitor."
  *               birthDate:
  *                 type: string
+ *                 description: "Birth date of the visitor (format: YYYY-MM-DD)."
  *               age:
- *                 type: number
+ *                 type: integer
+ *                 description: "Age of the visitor."
  *               documentExpiry:
  *                 type: string
+ *                 description: "Expiry date of the visitor's document (format: YYYY-MM-DD)."
  *               company:
  *                 type: string
+ *                 description: "Company or organization the visitor belongs to."
  *               TelephoneNumber:
  *                 type: string
+ *                 description: "Telephone number of the visitor."
  *               vehicleNumber:
  *                 type: string
+ *                 description: "Vehicle number associated with the visitor."
  *               category:
  *                 type: string
+ *                 description: "Category or purpose of the visit."
  *               ethnicity:
  *                 type: string
+ *                 description: "Ethnicity of the visitor."
  *               photoAttributes:
  *                 type: string
+ *                 description: "Photo attributes or features of the visitor."
  *               passNumber:
  *                 type: string
+ *                 description: "Pass number issued to the visitor."
  *               password:
- *                type: string
- *              idNumberHost:
- *               type: string
+ *                 type: string
+ *                 description: "Password for authentication."
+ *               idNumberHost:
+ *                 type: string
+ *                 description: "ID number of the host issuing the pass."
  *     responses:
  *       '200':
- *         description: Visitor registered successfully
+ *         description: "Pass issued successfully."
  *       '401':
- *         description: Unauthorized - Invalid or missing token
+ *         description: "Unauthorized - Invalid token or insufficient permissions."
  *       '403':
- *         description: Forbidden - User does not have access to register a visitor
+ *         description: "Access Denied - The user does not have permission to issue a pass."
+ *       '500':
+ *         description: "Internal Server Error."
+ *     security:
+ *       - bearerAuth: []
  */
 app.post('/issuepassVisitor', async function(req, res){
   const header = req.header('Authorization');
