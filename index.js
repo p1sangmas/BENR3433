@@ -582,6 +582,8 @@ app.post('/viewHost', async function(req, res){
  *                 type: string
  *               password:
  *                type: string
+ *              idNumberHost:
+ *               type: string
  *     responses:
  *       '200':
  *         description: Visitor registered successfully
