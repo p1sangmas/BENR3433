@@ -57,24 +57,23 @@ Content-Type: application/json
 
 POST http://localhost:3000/issuepassVisitor
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEyIiwicm9sZSI6Ikhvc3QiLCJpYXQiOjE3MDUzODg4MDh9.Vxg4ASiTdGWl-9r3QHEJ-nhJbMbhmXveG8u3bD-5WHA
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEzIiwicm9sZSI6InNlY3VyaXR5IiwiaWF0IjoxNzA1NDEyNDM4fQ.1sWqfW-ADc5zxFw0C7bklKiq8s7QojylYLOZu0IkBuE
 {
   "role": "visitor",
-  "name": "Park Seojoon", 
-  "idNumber": "psj123",
+  "name": "Lee ", 
+  "idNumber": "lee123",
   "documentType": "Mykad",
   "gender": "Male",
-  "birthDate": "2002-12-11",
-  "age": "41",
-  "documentExpiry": "2025-04-23",
-  "company": "Jimbit",
-  "TelephoneNumber": "012937641",
-  "vehicleNumber": "ERN6567",
+  "birthDate": "2008-12-15",
+  "age": "51",
+  "documentExpiry": "2028-04-03",
+  "company": "Kepala",
+  "TelephoneNumber": "0294727344",
+  "vehicleNumber": "JNI8343",
   "category": "Friend",
   "ethnicity": "Korean",
   "photoAttributes": "Photo Attributes",
-  "passNumber": "097",
+  "passNumber": "096",
   "password": "1234",
   "idNumberHost": "20223112"
 }

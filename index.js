@@ -538,14 +538,15 @@ app.post('/viewHost', async function(req, res){
   }
 });
 
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
 
 //issue pass visitor
 /**
  * @swagger
  * /issuepassVisitor:
  *   post:
- *     summary: Issue a visitor pass
- *     description: Issue a new visitor pass (accessible to Hosts and security personnel)
+ *     summary: Register a visitor and issue a pass
+ *     description: Register a new visitor and issue a pass (accessible to Hosts and security personnel)
  *     tags:
  *       - Host & Security
  *     security:
@@ -569,12 +570,10 @@ app.post('/viewHost', async function(req, res){
  *                 type: string
  *               birthDate:
  *                 type: string
- *                 format: date
  *               age:
  *                 type: number
  *               documentExpiry:
  *                 type: string
- *                 format: date
  *               company:
  *                 type: string
  *               TelephoneNumber:
@@ -591,21 +590,21 @@ app.post('/viewHost', async function(req, res){
  *                 type: string
  *               password:
  *                 type: string
- *               idNumberHost:
- *                 type: string
  *     responses:
  *       '200':
- *         description: Visitor pass issued successfully
+ *         description: Visitor registered successfully
+ *       '400':
+ *         description: Bad Request - Password does not meet complexity requirements
  *       '401':
  *         description: Unauthorized - Invalid or missing token
  *       '403':
- *         description: Forbidden - User does not have access to issue a visitor pass
+ *         description: Forbidden - User does not have access to register a visitor
  *       '500':
- *         description: Internal Server Error - An error occurred during processing
+ *         description: Internal Server Error - An error occurred during the registration process
  */
-app.post('/issuepassVisitor', async function(req, res){
+app.post('/issuepassVisitor', async function (req, res) {
   const header = req.header('Authorization');
-  
+
   // Check if Authorization header exists
   if (!header || !header.startsWith("Bearer ")) {
     return res.status(401).send("Invalid or no token"); // Send message if the token is missing or malformed
@@ -617,23 +616,29 @@ app.post('/issuepassVisitor', async function(req, res){
   try {
     decoded = jwt.verify(token, privatekey);
     console.log(decoded.role);
-  } catch(err) {
+  } catch (err) {
     console.log("Error decoding token:", err.message);
     return res.status(401).send("Unauthorized"); // Send a 401 Unauthorized response
   }
 
   if (decoded && (decoded.role === "Host" || decoded.role === "security")) {
     const {
-      role, name, idNumber, documentType, gender, birthDate, age, 
-      documentExpiry, company, TelephoneNumber, vehicleNumber, 
-      category, ethnicity, photoAttributes, passNumber, password, idNumberHost
+      role, name, idNumber, documentType, gender, birthDate,
+      age, documentExpiry, company, TelephoneNumber,
+      vehicleNumber, category, ethnicity, photoAttributes,
+      passNumber, password, idNumberHost
     } = req.body;
 
     try {
-      await issuepassVisitor(role, name, idNumber, documentType, gender, birthDate, 
-                              age, documentExpiry, company, TelephoneNumber, 
-                              vehicleNumber, category, ethnicity, photoAttributes, 
-                              passNumber, password, idNumberHost, res);
+      // Validate password complexity
+      if (!PASSWORD_REGEX.test(password)) {
+        return res.status(400).send("Password does not meet complexity requirements");
+      }
+
+      await issuepassVisitor(role, name, idNumber, documentType, gender, birthDate,
+        age, documentExpiry, company, TelephoneNumber,
+        vehicleNumber, category, ethnicity, photoAttributes,
+        passNumber, password, idNumberHost, res);
     } catch (error) {
       console.log(error.message);
       res.status(500).send("An error occurred");
@@ -1133,7 +1138,7 @@ async function registertestHost(newrole, newname, newidNumber, newemail, newpass
 }
 
 //CREATE(register Visitor)
-async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate, 
+async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate,
   newage, newdocumentExpiry, newcompany, newTelephoneNumber, newvehicleNumber,
   newcategory, newethnicity, newphotoAttributes, newpassNumber, password, idNumberHost, res) {
   // TODO: Check if username exists
