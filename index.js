@@ -690,7 +690,7 @@ app.post('/issuepassVisitor', async function(req, res){
  *       '404':
  *         description: Not Found - Visitor pass or host not found
  */
-app.post('/retrieveHostContact', async (req, res) => {
+app.post('/retrieveHostContact', async function(req, res) {
   const token = req.header('Authorization') ? req.header('Authorization').split(" ")[1] : null;
 
   if (!token) {
@@ -701,10 +701,10 @@ app.post('/retrieveHostContact', async (req, res) => {
     const decoded = jwt.verify(token, privatekey);
 
     if (decoded && decoded.role === "security") {
-      const { visitorPassNumber } = req.body;
+      const visitorPassNumber = req.body;
 
       try {
-        const hostContactResponse = await retrieveHostContact(visitorPassNumber);
+        const hostContactResponse = await retrieveHostContact(visitorPassNumber.visitorPassNumber);
         // Send the host contact number in the response body
         res.status(200).send({ phoneNumber: hostContactResponse.phoneNumber });
       } catch (error) {
@@ -720,6 +720,7 @@ app.post('/retrieveHostContact', async (req, res) => {
     res.status(401).send("Unauthorized");
   }
 });
+
 
 
 // Manage User Role
