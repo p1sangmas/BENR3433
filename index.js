@@ -656,49 +656,39 @@ app.post('/issuepassVisitor', async function(req, res){
  * @swagger
  * /retrieveHostContact:
  *   post:
- *     summary: "Retrieve Host Contact"
- *     description: "Public API for authenticated security to retrieve the contact number of the host from the given visitor pass."
- *     tags: [Security]
+ *     summary: Retrieve host contact number
+ *     description: Retrieve the contact number of the host from the given visitor pass (accessible to security personnel)
+ *     tags:
+ *       - Security 
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: body
- *         name: body
- *         description: "Visitor pass information"
- *         required: true
- *         schema:
- *           type: object
- *           properties:
- *             visitorPassNumber:
- *               type: string
- *         example:
- *           visitorPassNumber: "001"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               visitorPassNumber:
+ *                 type: string
+ *                 description: Visitor pass number to retrieve host contact
  *     responses:
  *       '200':
- *         description: "Host contact retrieved successfully"
+ *         description: Host contact retrieved successfully
  *         content:
  *           application/json:
- *             example:
- *               phoneNumber: "01374463567"
- *       '400':
- *         description: "Invalid or no token"
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 phoneNumber:
+ *                   type: string
+ *                   description: Contact number of the host
  *       '401':
- *         description: "Unauthorized - Invalid token or insufficient permissions"
+ *         description: Unauthorized - Invalid or missing token
  *       '403':
- *         description: "Access Denied"
+ *         description: Forbidden - User does not have access to retrieve host contact
  *       '404':
- *         description: "Visitor or Host not found"
- *       '500':
- *         description: "Internal Server Error"
- *     consumes:
- *       - "application/json"
- *     produces:
- *       - "application/json"
- *   securityDefinitions:
- *     bearerAuth:
- *       type: "apiKey"
- *       name: "Authorization"
- *       in: "header"
+ *         description: Not Found - Visitor pass or host not found
  */
 app.post('/retrieveHostContact', async (req, res) => {
   const token = req.header('Authorization') ? req.header('Authorization').split(" ")[1] : null;
