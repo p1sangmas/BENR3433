@@ -1105,8 +1105,8 @@ async function retrievePhoneNumber(idNumber) {
       // Return the phone number in the response body
       return { phoneNumber: exist.phoneNumber };
     } else {
-      // Throw an error if the host does not exist
-      throw new Error("Host does not exist.");
+      // Throw an error if the host is not found
+      throw new Error("Host not found");
     }
   } catch (error) {
     // Log the actual error for debugging
