@@ -86,11 +86,11 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwM
 
 {
   "role": "Host",
-  "name": "Zaid",
-  "idNumber": "98765",
-  "email": "zaid@email.com",
-  "password": "zaid123",
-  "phoneNumber": "0168219343"
+  "name": "Cheng",
+  "idNumber": "cheng123",
+  "email": "cheng@email.com",
+  "password": "cheng123",
+  "phoneNumber": "028422335"
 }
 
 ###

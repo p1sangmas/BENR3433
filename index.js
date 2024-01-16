@@ -99,8 +99,8 @@ app.post('/retrieveVisitor', async function(req, res) {
  * @swagger
  * /loginHost:
  *   post:
- *     summary: Login as Host
- *     description: Authenticate and login as a host using the provided ID number and password.
+ *     summary: Login as a host
+ *     description: Authenticate and generate a token for the host
  *     tags:
  *       - Host
  *     requestBody:
@@ -112,48 +112,33 @@ app.post('/retrieveVisitor', async function(req, res) {
  *             properties:
  *               idNumber:
  *                 type: string
- *                 description: The unique ID number of the host.
+ *                 description: Host's ID number
  *               password:
  *                 type: string
- *                 description: The password of the host.
+ *                 description: Host's password
  *     responses:
  *       '200':
- *         description: Successfully authenticated and logged in as a host.
+ *         description: Successful login
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 Token:
+ *                 token:
  *                   type: string
- *                   description: JWT token for the authenticated host.
+ *                   description: JWT token for authentication
  *       '401':
- *         description: Unauthorized - Incorrect password provided.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Wrong password!"
+ *         description: Unauthorized - Wrong password or account locked
  *       '404':
- *         description: Not Found - Host with the provided ID number does not exist.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Username not exist!"
+ *         description: Not Found - Host not found
  *       '500':
- *         description: Internal Server Error - Failed to authenticate due to server error.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Internal Server Error!"
+ *         description: Internal Server Error - Unexpected error
  */
-app.post( '/loginHost',async function (req, res) {
-  let {idNumber, password} = req.body;
+app.post('/loginHost', async function (req, res) {
+  let { idNumber, password } = req.body;
   const hashed = await generateHash(password);
-  await loginHost(res, idNumber, hashed)
-})
+  await loginHost(res, idNumber, hashed);
+});
 
 //login as Security
 /**
@@ -998,13 +983,33 @@ async function loginHost(res, idNumber, hashed) {
   const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: idNumber });
   
   if (exist) {
-    const passwordMatch = await bcrypt.compare(exist.password, hashed);
+    // Check if the account is locked
+    if (exist.accountLocked) {
+      return res.status(401).send("Account is locked. Contact administrator.");
+    }
+
+    const passwordMatch = await bcrypt.compare(hashed, exist.password);
     if (passwordMatch) {
       console.log("Login Success!\nRole: " + exist.role);
       logs(idNumber, exist.name, exist.role);
       const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
       res.send("Token: " + token);
     } else {
+      // Increment failed login attempts
+      await client.db("assignmentCondo").collection("owner").updateOne(
+        { idNumber: idNumber },
+        { $inc: { failedLoginAttempts: 1 } }
+      );
+
+      // Check if the account should be locked
+      if (exist.failedLoginAttempts + 1 >= 5) {
+        await client.db("assignmentCondo").collection("owner").updateOne(
+          { idNumber: idNumber },
+          { $set: { accountLocked: true } }
+        );
+        return res.status(401).send("Account is locked. Contact administrator.");
+      }
+
       // Send password mismatch error in response
       res.status(401).send("Wrong password!");
     }
