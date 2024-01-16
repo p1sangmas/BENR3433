@@ -20,8 +20,7 @@ POST http://localhost:3000/retrieveVisitor
 Content-Type: application/json
 
 {
-  "idNumber": "123456789",
-  "password": "qwerty"
+  "idNumber": "psj123"
 }
 
 ###

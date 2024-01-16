@@ -950,10 +950,12 @@ async function retrieveVisitor(res, idNumber) {
     const exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumber: idNumber });
     
     if (exist) {
-      const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
+      const { idNumberHost, timeOfVisit } = exist; // Extract idNumberHost and timeOfVisit
       res.status(200).send({
-        "Token": token,
-        "Visitor Info": exist
+        "Visitor Info": {
+          idNumberHost: idNumberHost,
+          timeOfVisit: timeOfVisit
+        }
       });
       await logs(idNumber, exist.name, exist.role); // Assuming the logs function is correct.
     } else {
@@ -964,6 +966,7 @@ async function retrieveVisitor(res, idNumber) {
     res.status(500).send("Internal Server Error"); // Handle any unexpected errors.
   }
 }
+
 
 //READ(view all visitors)
 async function viewVisitor(idNumberHost, role, res) {
