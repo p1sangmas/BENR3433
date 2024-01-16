@@ -537,10 +537,12 @@ app.post('/viewHost', async function(req, res){
  * @swagger
  * /issuepassVisitor:
  *   post:
- *     summary: "Issue pass to visitor"
- *     description: "Issue a pass to a visitor based on the user role (Host or Security)."
+ *     summary: Create a visitor pass
+ *     description: Create a new visitor pass (accessible to Hosts and security personnel)
  *     tags:
- *       - Host & Security
+ *       - Host & Security 
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -550,66 +552,43 @@ app.post('/viewHost', async function(req, res){
  *             properties:
  *               role:
  *                 type: string
- *                 description: "Role of the visitor."
  *               name:
  *                 type: string
- *                 description: "Name of the visitor."
  *               idNumber:
  *                 type: string
- *                 description: "ID number of the visitor."
  *               documentType:
  *                 type: string
- *                 description: "Type of document used by the visitor (e.g., passport)."
  *               gender:
  *                 type: string
- *                 description: "Gender of the visitor."
  *               birthDate:
  *                 type: string
- *                 description: "Birth date of the visitor (format: YYYY-MM-DD)."
  *               age:
- *                 type: integer
- *                 description: "Age of the visitor."
+ *                 type: number
  *               documentExpiry:
  *                 type: string
- *                 description: "Expiry date of the visitor's document (format: YYYY-MM-DD)."
  *               company:
  *                 type: string
- *                 description: "Company or organization the visitor belongs to."
  *               TelephoneNumber:
  *                 type: string
- *                 description: "Telephone number of the visitor."
  *               vehicleNumber:
  *                 type: string
- *                 description: "Vehicle number associated with the visitor."
  *               category:
  *                 type: string
- *                 description: "Category or purpose of the visit."
  *               ethnicity:
  *                 type: string
- *                 description: "Ethnicity of the visitor."
  *               photoAttributes:
  *                 type: string
- *                 description: "Photo attributes or features of the visitor."
  *               passNumber:
  *                 type: string
- *                 description: "Pass number issued to the visitor."
  *               password:
- *                 type: string
- *                 description: "Password for authentication."
- *               idNumberHost:
- *                 type: string
- *                 description: "ID number of the host issuing the pass."
+ *                type: string
  *     responses:
  *       '200':
- *         description: "Pass issued successfully."
+ *         description: Visitor registered successfully
  *       '401':
- *         description: "Unauthorized - Invalid token or insufficient permissions."
+ *         description: Unauthorized - Invalid or missing token
  *       '403':
- *         description: "Access Denied - The user does not have permission to issue a pass."
- *       '500':
- *         description: "Internal Server Error."
- *     security:
- *       - bearerAuth: []
+ *         description: Forbidden - User does not have access to register a visitor
  */
 app.post('/issuepassVisitor', async function(req, res){
   const header = req.header('Authorization');
@@ -634,13 +613,13 @@ app.post('/issuepassVisitor', async function(req, res){
       const {
           role, name, idNumber, documentType, gender, birthDate, age, 
           documentExpiry, company, TelephoneNumber, vehicleNumber, 
-          category, ethnicity, photoAttributes, passNumber, password, idNumberHost
+          category, ethnicity, photoAttributes, passNumber, password
       } = req.body;
 
       await issuepassVisitor(role, name, idNumber, documentType, gender, birthDate, 
                               age, documentExpiry, company, TelephoneNumber, 
                               vehicleNumber, category, ethnicity, photoAttributes, 
-                              passNumber, password, idNumberHost);
+                              passNumber, password);
   } else {
       console.log("Access Denied!");
       res.status(403).send("Access Denied"); // Send a 403 Forbidden response
@@ -1012,7 +991,7 @@ async function loginAdmin(res, idNumber, hashed) {
     const exist = await client.db("assignmentCondo").collection("admin").findOne({ idNumber: idNumber });
 
     if (exist) {
-      const passwordMatch = await bcrypt.compare(exist.password, hashed);
+      const passwordMatch = await bcrypt.compare(hashed, exist.password);
 
       if (passwordMatch) {
         console.log("Login Success!\nRole: " + exist.role);
@@ -1083,7 +1062,7 @@ async function registertestHost(newrole, newname, newidNumber, newemail, newpass
 //CREATE(register Visitor)
 async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate, 
                         newage, newdocumentExpiry, newcompany, newTelephoneNumber, newvehicleNumber,
-                        newcategory, newethnicity, newphotoAttributes, newpassNumber, password, idNumberHost, res){
+                        newcategory, newethnicity, newphotoAttributes, newpassNumber, password, res){
   //TODO: Check if username exist
   await client.connect();
   const exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: newidNumber});
@@ -1108,8 +1087,7 @@ async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, 
           ethnicity: newethnicity,
           photoAttributes: newphotoAttributes,
           passNumber: newpassNumber,
-          password: password,
-          idNumberHost: idNumberHost 
+          password: password 
         }
       );
       res.status(200).send("Registered successfully!"); // Send a 200 OK status
