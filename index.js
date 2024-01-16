@@ -1215,18 +1215,6 @@ async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, 
     return res.status(400).send('All fields are required'); // Send a 400 Bad Request status if any field is missing
   }
 
-  // Validate specific fields (customize according to your requirements)
-  if (newidNumber.length !== 6) {
-    return res.status(400).send('ID number must be 6 characters'); // Example validation
-  }
-
-// Validate specific fields (customize according to your requirements)
-const trimmedIdNumber = newidNumber.trim(); // Remove leading and trailing spaces
-
-if (trimmedIdNumber.length !== 10) {
-  return res.status(400).send('ID number must be 10 characters'); // Example validation
-}
-
 if (!PASSWORD_REGEX.test(password)) {
   return res.status(400).send('Password does not meet complexity requirements');
 }
