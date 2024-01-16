@@ -713,29 +713,6 @@ app.post('/retrieveHostContact', async (req, res) => {
   }
 });
 
-async function retrieveHostContact(visitorPassNumber) {
-  try {
-    await client.connect();
-
-    const visitor = await client.db("assignmentCondo").collection("visitor").findOne({ passNumber: visitorPassNumber });
-    
-    if (visitor) {
-      const hostIdNumber = visitor.idNumberHost;
-      const host = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: hostIdNumber });
-
-      if (host) {
-        return { phoneNumber: host.phoneNumber };
-      } else {
-        throw new Error("Host not found.");
-      }
-    } else {
-      throw new Error("Visitor not found.");
-    }
-  } catch (error) {
-    console.error("Error retrieving host contact:", error);
-    throw error;
-  }
-}
 
 // Manage User Role
 /**
@@ -1118,6 +1095,29 @@ async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, 
   }
 }
 
+async function retrieveHostContact(visitorPassNumber) {
+  try {
+    await client.connect();
+
+    const visitor = await client.db("assignmentCondo").collection("visitor").findOne({ passNumber: visitorPassNumber });
+    
+    if (visitor) {
+      const hostIdNumber = visitor.idNumberHost;
+      const host = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: hostIdNumber });
+
+      if (host) {
+        return { phoneNumber: host.phoneNumber };
+      } else {
+        throw new Error("Host not found.");
+      }
+    } else {
+      throw new Error("Visitor not found.");
+    }
+  } catch (error) {
+    console.error("Error retrieving host contact:", error);
+    throw error;
+  }
+}
 
 async function manageRole(idNumber, role) {
   try {
