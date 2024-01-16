@@ -668,7 +668,7 @@ app.post('/issuepassVisitor', async function(req, res){
  *       '403':
  *         description: "Forbidden - User does not have the necessary permissions."
  *       '404':
- *         description: "Not Found - Visitor with the provided ID number does not exist in the database."
+ *         description: "Not Found - Host with the provided ID number does not exist in the database."
  *       '400':
  *         description: "Bad Request - Invalid or no token provided."
  *     consumes:
@@ -1102,7 +1102,7 @@ async function retrievePhoneNumber(idNumber){
   
   if(exist){
     // Return the phone number in the response body
-    return { phoneNumber: exist.TelephoneNumber };
+    return { phoneNumber: exist.phoneNumber };
   } else {
     // Throw an error if the visitor does not exist
     throw new Error("Host does not exist.");
