@@ -39,8 +39,8 @@ POST http://localhost:3000/loginSecurity
 Content-Type: application/json
 
 {
-  "idNumber": "20223113",
-  "password": "12345"
+  "idNumber": "56789",
+  "password": "awang123"
 }
 
 ###
@@ -49,8 +49,8 @@ POST http://localhost:3000/loginHost
 Content-Type: application/json
 
 {
-  "idNumber": "20223112",
-  "password": "12345"
+  "idNumber": "cheng123",
+  "password": "#Cheng123"
 }
 
 ###

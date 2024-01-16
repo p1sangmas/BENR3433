@@ -1096,37 +1096,51 @@ async function loginSecurity(res, idNumber, hashed) {
 
 async function loginAdmin(res, idNumber, hashed) {
   await client.connect();
+  const adminCollection = client.db("assignmentCondo").collection("admin");
 
   try {
-    const adminCollection = client.db("assignmentCondo").collection("admin");
-    const exist = await adminCollection.findOne({ idNumber: idNumber });
+    const adminUser = await adminCollection.findOne({ idNumber: idNumber });
 
-    if (exist) {
-      const passwordMatch = await bcrypt.compare(exist.password, hashed);
+    if (adminUser) {
+      const { loginAttempts } = adminUser;
+
+      if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+        // Account is locked due to too many failed attempts
+        res.status(401).json({
+          error: "Account locked. Please contact support for assistance."
+        });
+        return;
+      }
+
+      const passwordMatch = await bcrypt.compare(adminUser.password, hashed);
 
       if (passwordMatch) {
-        // Reset login attempts upon successful login
+        // Reset login attempts on successful login
         await adminCollection.updateOne({ idNumber: idNumber }, { $set: { loginAttempts: 0 } });
 
-        console.log("Login Success!\nRole: " + exist.role);
-        logs(idNumber, exist.name, exist.role);
-        const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
-        res.status(200).json({ success: true, message: "Login Success!", token: token });
+        console.log("Login Success!\nRole: " + adminUser.role);
+        logs(idNumber, adminUser.name, adminUser.role);
+        const token = jwt.sign({ idNumber: idNumber, role: adminUser.role }, privatekey);
+        res.status(200).json({ token: token });
       } else {
-        // Increment login attempts
-        await adminCollection.updateOne({ idNumber: idNumber }, { $inc: { loginAttempts: 1 } });
-        console.log("Wrong password!");
-        res.status(401).json({ success: false, message: "Wrong password!" });
+        // Update login attempts on failed login
+        await adminCollection.updateOne(
+          { idNumber: idNumber },
+          {
+            $inc: { loginAttempts: 1 }
+          }
+        );
+
+        // Send password mismatch error in response
+        res.status(401).send("Wrong password!");
       }
     } else {
-      console.log("Username not exist!");
-      res.status(404).json({ success: false, message: "Username not exist!" });
+      // Send username not found error in response
+      res.status(404).send("Username not exist!");
     }
   } catch (error) {
-    console.error("Error:", error.message);
-    res.status(500).json({ success: false, message: "An error occurred" });
-  } finally {
-    client.close();
+    console.error("Error during login:", error);
+    res.status(500).send("Internal Server Error"); // Handle any unexpected errors.
   }
 }
 
