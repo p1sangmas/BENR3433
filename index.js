@@ -1097,21 +1097,15 @@ async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, 
 
 //READ(retrieve phone number for visitor)
 async function retrievePhoneNumber(idNumber) {
-  try {
-    await client.connect();
-    const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: idNumber });
-
-    if (exist) {
-      // Return the phone number in the response body
-      return { phoneNumber: exist.phoneNumber };
-    } else {
-      // Throw an error if the host is not found
-      throw new Error("Host not found");
-    }
-  } catch (error) {
-    // Log the actual error for debugging
-    console.error("Error retrieving host:", error);
-    throw error; // Re-throw the error to be caught in the calling function
+  await client.connect();
+  const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: idNumber});
+  
+  if(exist){
+    // Return the phone number in the response body
+    return { phoneNumber: exist.phoneNumber };
+  } else {
+    // Throw an error if the visitor does not exist
+    throw new Error("Host does not exist.");
   }
 }
 
