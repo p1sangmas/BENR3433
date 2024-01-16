@@ -529,8 +529,8 @@ app.post('/viewHost', async function(req, res){
  * @swagger
  * /issuepassVisitor:
  *   post:
- *     summary: Register a visitor and issue a pass
- *     description: Register a new visitor and issue a pass (accessible to Hosts and security personnel)
+ *     summary: Issue Visitor Pass
+ *     description: Issue a visitor pass with input validation.
  *     tags:
  *       - Host & Security
  *     security:
@@ -555,7 +555,7 @@ app.post('/viewHost', async function(req, res){
  *               birthDate:
  *                 type: string
  *               age:
- *                 type: number
+ *                 type: integer
  *               documentExpiry:
  *                 type: string
  *               company:
@@ -574,38 +574,40 @@ app.post('/viewHost', async function(req, res){
  *                 type: string
  *               password:
  *                 type: string
+ *               idNumberHost:
+ *                 type: string
  *     responses:
  *       '200':
- *         description: Visitor registered successfully
+ *         description: Registered successfully.
  *       '400':
- *         description: Bad Request - Password does not meet complexity requirements
+ *         description: Bad Request - Invalid input or visitor already registered.
  *       '401':
- *         description: Unauthorized - Invalid or missing token
+ *         description: Unauthorized - Invalid or missing token.
  *       '403':
- *         description: Forbidden - User does not have access to register a visitor
+ *         description: Forbidden - User does not have access to issue visitor pass.
  *       '500':
- *         description: Internal Server Error - An error occurred during the registration process
+ *         description: Internal Server Error - An error occurred.
  */
 app.post('/issuepassVisitor', async function (req, res) {
   const header = req.header('Authorization');
 
   // Check if Authorization header exists
-  if (!header || !header.startsWith("Bearer ")) {
-    return res.status(401).send("Invalid or no token"); // Send message if the token is missing or malformed
+  if (!header || !header.startsWith('Bearer ')) {
+    return res.status(401).send('Invalid or no token'); // Send message if the token is missing or malformed
   }
 
-  const token = header.split(" ")[1];
+  const token = header.split(' ')[1];
   let decoded;
 
   try {
     decoded = jwt.verify(token, privatekey);
     console.log(decoded.role);
   } catch (err) {
-    console.log("Error decoding token:", err.message);
-    return res.status(401).send("Unauthorized"); // Send a 401 Unauthorized response
+    console.log('Error decoding token:', err.message);
+    return res.status(401).send('Unauthorized'); // Send a 401 Unauthorized response
   }
 
-  if (decoded && (decoded.role === "Host" || decoded.role === "security")) {
+  if (decoded && (decoded.role === 'Host' || decoded.role === 'security')) {
     const {
       role, name, idNumber, documentType, gender, birthDate,
       age, documentExpiry, company, TelephoneNumber,
@@ -614,22 +616,17 @@ app.post('/issuepassVisitor', async function (req, res) {
     } = req.body;
 
     try {
-      // Validate password complexity
-      if (!PASSWORD_REGEX.test(password)) {
-        return res.status(400).send("Password does not meet complexity requirements");
-      }
-
       await issuepassVisitor(role, name, idNumber, documentType, gender, birthDate,
-        age, documentExpiry, company, TelephoneNumber,
-        vehicleNumber, category, ethnicity, photoAttributes,
-        passNumber, password, idNumberHost, res);
+                              age, documentExpiry, company, TelephoneNumber,
+                              vehicleNumber, category, ethnicity, photoAttributes,
+                              passNumber, password, idNumberHost, res);
     } catch (error) {
       console.log(error.message);
-      res.status(500).send("An error occurred");
+      res.status(500).send('An error occurred');
     }
   } else {
-    console.log("Access Denied!");
-    res.status(403).send("Access Denied"); // Send a 403 Forbidden response
+    console.log('Access Denied!');
+    res.status(403).send('Access Denied'); // Send a 403 Forbidden response
   }
 });
 
@@ -1209,37 +1206,55 @@ async function registertestHost(newrole, newname, newidNumber, newemail, newpass
 async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate,
   newage, newdocumentExpiry, newcompany, newTelephoneNumber, newvehicleNumber,
   newcategory, newethnicity, newphotoAttributes, newpassNumber, password, idNumberHost, res) {
-  // TODO: Check if username exists
+  // Input validation
+  if (
+    !newrole || !newname || !newidNumber || !newdocumentType || !newgender || !newbirthDate ||
+    !newage || !newdocumentExpiry || !newcompany || !newTelephoneNumber || !newvehicleNumber ||
+    !newcategory || !newethnicity || !newphotoAttributes || !newpassNumber || !password || !idNumberHost
+  ) {
+    return res.status(400).send('All fields are required'); // Send a 400 Bad Request status if any field is missing
+  }
+
+  // Validate specific fields (customize according to your requirements)
+  if (newidNumber.length !== 10) {
+    return res.status(400).send('ID number must be 10 characters'); // Example validation
+  }
+
+  if (!PASSWORD_REGEX.test(password)) {
+    return res.status(400).send('Password does not meet complexity requirements');
+  }
+
+  // Check if username exists
   await client.connect();
-  const exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumber: newidNumber });
+  const exist = await client.db('assignmentCondo').collection('visitor').findOne({ idNumber: newidNumber });
 
   if (exist) {
-    res.status(400).send("Visitor has already registered"); // Send a 400 Bad Request status
-  } else {
-    const currentDate = new Date(); // Get the current date and time
-    await client.db("assignmentCondo").collection("visitor").insertOne({
-      role: newrole,
-      name: newname,
-      idNumber: newidNumber,
-      documentType: newdocumentType,
-      gender: newgender,
-      birthDate: newbirthDate,
-      age: newage,
-      documentExpiry: newdocumentExpiry,
-      company: newcompany,
-      TelephoneNumber: newTelephoneNumber,
-      vehicleNumber: newvehicleNumber,
-      category: newcategory,
-      ethnicity: newethnicity,
-      photoAttributes: newphotoAttributes,
-      passNumber: newpassNumber,
-      password: password,
-      idNumberHost: idNumberHost,
-      timeOfVisit: currentDate // Add the current date and time to the document
-    });
-
-    res.status(200).send("Registered successfully!"); // Send a 200 OK status
+    return res.status(400).send('Visitor has already registered'); // Send a 400 Bad Request status
   }
+
+  const currentDate = new Date(); // Get the current date and time
+  await client.db('assignmentCondo').collection('visitor').insertOne({
+    role: newrole,
+    name: newname,
+    idNumber: newidNumber,
+    documentType: newdocumentType,
+    gender: newgender,
+    birthDate: newbirthDate,
+    age: newage,
+    documentExpiry: newdocumentExpiry,
+    company: newcompany,
+    TelephoneNumber: newTelephoneNumber,
+    vehicleNumber: newvehicleNumber,
+    category: newcategory,
+    ethnicity: newethnicity,
+    photoAttributes: newphotoAttributes,
+    passNumber: newpassNumber,
+    password: password,
+    idNumberHost: idNumberHost,
+    timeOfVisit: currentDate // Add the current date and time to the document
+  });
+
+  res.status(200).send('Registered successfully!'); // Send a 200 OK status
 }
 
 async function retrieveHostContact(visitorPassNumber) {
