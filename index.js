@@ -600,7 +600,7 @@ app.post('/viewHost', async function(req, res){
  *                 description: Password for authentication (if applicable)
  *              idNumberHost:
  *                type: string  
- *               description: ID number of the host who issued the pass
+ *               description: ID number of the host
  *     responses:
  *       '200':
  *         description: Visitor registered successfully
