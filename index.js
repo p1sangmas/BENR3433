@@ -85,8 +85,6 @@ app.use(express.json());
  *         description: "Visitor not found."
  *       '500':
  *         description: "Internal Server Error."
- *     security:
- *       - bearerAuth: []
  */
 app.post('/retrieveVisitor', async function(req, res) {
   const { idNumber } = req.body;
@@ -447,7 +445,7 @@ app.post('/registertestHost', async function (req, res) {
  *     summary: View visitor details based on the host's ID
  *     description: Retrieve visitor details based on the host's ID number. This endpoint is restricted to hosts.
  *     tags:
- *       - Host & Security
+ *       - Host
  *     security:
  *       - bearerAuth: []
  *     requestBody:
