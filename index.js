@@ -1204,37 +1204,50 @@ async function registertestHost(newrole, newname, newidNumber, newemail, newpass
 async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, newgender, newbirthDate,
   newage, newdocumentExpiry, newcompany, newTelephoneNumber, newvehicleNumber,
   newcategory, newethnicity, newphotoAttributes, newpassNumber, password, idNumberHost, res) {
-  // TODO: Check if username exists
+  // Input validation
+  if (
+    !newrole || !newname || !newidNumber || !newdocumentType || !newgender || !newbirthDate ||
+    !newage || !newdocumentExpiry || !newcompany || !newTelephoneNumber || !newvehicleNumber ||
+    !newcategory || !newethnicity || !newphotoAttributes || !newpassNumber || !password || !idNumberHost
+  ) {
+    return res.status(400).send('All fields are required'); // Send a 400 Bad Request status if any field is missing
+  }
+
+  if (!PASSWORD_REGEX.test(password)) {
+    return res.status(400).send('Password does not meet complexity requirements');
+  }
+
+  // Check if username exists
   await client.connect();
-  const exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumber: newidNumber });
+  const exist = await client.db('assignmentCondo').collection('visitor').findOne({ idNumber: newidNumber });
 
   if (exist) {
-    res.status(400).send("Visitor has already registered"); // Send a 400 Bad Request status
-  } else {
-    const currentDate = new Date(); // Get the current date and time
-    await client.db("assignmentCondo").collection("visitor").insertOne({
-      role: newrole,
-      name: newname,
-      idNumber: newidNumber,
-      documentType: newdocumentType,
-      gender: newgender,
-      birthDate: newbirthDate,
-      age: newage,
-      documentExpiry: newdocumentExpiry,
-      company: newcompany,
-      TelephoneNumber: newTelephoneNumber,
-      vehicleNumber: newvehicleNumber,
-      category: newcategory,
-      ethnicity: newethnicity,
-      photoAttributes: newphotoAttributes,
-      passNumber: newpassNumber,
-      password: password,
-      idNumberHost: idNumberHost,
-      timeOfVisit: currentDate // Add the current date and time to the document
-    });
-
-    res.status(200).send("Registered successfully!"); // Send a 200 OK status
+    return res.status(400).send('Visitor has already registered'); // Send a 400 Bad Request status
   }
+
+  const currentDate = new Date(); // Get the current date and time
+  await client.db('assignmentCondo').collection('visitor').insertOne({
+    role: newrole,
+    name: newname,
+    idNumber: newidNumber,
+    documentType: newdocumentType,
+    gender: newgender,
+    birthDate: newbirthDate,
+    age: newage,
+    documentExpiry: newdocumentExpiry,
+    company: newcompany,
+    TelephoneNumber: newTelephoneNumber,
+    vehicleNumber: newvehicleNumber,
+    category: newcategory,
+    ethnicity: newethnicity,
+    photoAttributes: newphotoAttributes,
+    passNumber: newpassNumber,
+    password: password,
+    idNumberHost: idNumberHost,
+    timeOfVisit: currentDate // Add the current date and time to the document
+  });
+
+  res.status(200).send('Registered successfully!'); // Send a 200 OK status
 }
 
 async function retrieveHostContact(visitorPassNumber) {
