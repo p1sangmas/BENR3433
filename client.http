@@ -103,16 +103,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwM
 
 ###
 
-POST http://localhost:3000/retrievePhoneNumber
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEzIiwicm9sZSI6InNlY3VyaXR5IiwiaWF0IjoxNzA1Mzc1MzI4fQ.LBnXS8fbjUXNFf6CsHXiWk_UskI5rn6rhW7kLC3lXWQ
-
-{
-  "idNumber": "20223112"
-}
-
-###
-
 POST http://localhost:3000/manageRole
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTE5Iiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzA0NTU1NTAzfQ.9qK3vocFS68JRntEBQJ0z6mHp4lZ3PbZkW8BRkLb868
@@ -129,5 +119,15 @@ Content-Type: application/json
 
 {
   "idNumber": "20223119",
-  "password": "sdads"
+  "password": "67890"
+}
+
+###
+
+POST http://localhost:3000/retrieveHostContact
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEzIiwicm9sZSI6InNlY3VyaXR5IiwiaWF0IjoxNzA1Mzc4ODk1fQ.vYRg421AuM3Lp04EhuUrXhacRj9EkEb02zhSwhikdIY
+
+{
+  "visitorPassNumber": "010"
 }
