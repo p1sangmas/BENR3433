@@ -1216,21 +1216,28 @@ async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, 
   }
 
   // Validate specific fields (customize according to your requirements)
-  if (newidNumber.length !== 10) {
-    return res.status(400).send('ID number must be 10 characters'); // Example validation
+  if (newidNumber.length !== 6) {
+    return res.status(400).send('ID number must be 6 characters'); // Example validation
   }
 
-  if (!PASSWORD_REGEX.test(password)) {
-    return res.status(400).send('Password does not meet complexity requirements');
-  }
+// Validate specific fields (customize according to your requirements)
+const trimmedIdNumber = newidNumber.trim(); // Remove leading and trailing spaces
 
-  // Check if username exists
-  await client.connect();
-  const exist = await client.db('assignmentCondo').collection('visitor').findOne({ idNumber: newidNumber });
+if (trimmedIdNumber.length !== 10) {
+  return res.status(400).send('ID number must be 10 characters'); // Example validation
+}
 
-  if (exist) {
-    return res.status(400).send('Visitor has already registered'); // Send a 400 Bad Request status
-  }
+if (!PASSWORD_REGEX.test(password)) {
+  return res.status(400).send('Password does not meet complexity requirements');
+}
+
+// Check if username exists
+await client.connect();
+const exist = await client.db('assignmentCondo').collection('visitor').findOne({ idNumber: trimmedIdNumber });
+
+if (exist) {
+  return res.status(400).send('Visitor has already registered'); // Send a 400 Bad Request status
+}
 
   const currentDate = new Date(); // Get the current date and time
   await client.db('assignmentCondo').collection('visitor').insertOne({
