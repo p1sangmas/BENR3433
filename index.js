@@ -967,20 +967,22 @@ async function retrieveVisitor(res, idNumber) {
 //READ(view all visitors)
 async function viewVisitor(idNumberHost, role, res) {
   await client.connect();
-  let exist;
+  let visitors;
 
   if (role === "Host") {
-    exist = await client.db("assignmentCondo").collection("visitor").findOne({ idNumberHost: idNumberHost });
-    if (!exist) {
+    visitors = await client.db("assignmentCondo").collection("visitor").find({ idNumberHost: idNumberHost }).toArray();
+
+    if (visitors.length === 0) {
       return res.status(404).send("No visitors found for this host."); // Send not found error in response
     }
-    return res.status(200).send(exist); // Send existing visitor details in response
+
+    return res.status(200).send(visitors); // Send existing visitors' details in response
   } 
   else if (role === "visitor" || role === "security") {
     return res.status(403).send("Forbidden! You don't have permission to view this information."); // Send forbidden error in response
   } 
   else {
-    return res.status(400).send("Invalid role!"); // Send bad request error in response for invalid role
+    return res.status(400).send("Invalid role!"); // Send bad request error in response for an invalid role
   }
 }
 
