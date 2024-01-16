@@ -885,12 +885,12 @@ app.delete('/deleteVisitor', async (req, res) => {
       const { passNumber } = req.body;
 
       try {
-        await deleteVisitor(passNumber);
+        await deleteVisitor(decoded.idNumber, passNumber);
         // Send success message in the response body
         res.status(200).send("Visitor deleted successfully");
       } catch (error) {
-        // Handle errors such as visitor not found
-        res.status(404).send(error.message);
+        // Handle errors such as visitor not found or access denied
+        res.status(error.statusCode).send(error.message);
       }
     } else {
       // Send "Access Denied" response
@@ -1221,17 +1221,21 @@ async function manageRole(idNumber, role) {
 }
 
 // Function to delete assigned visitor based on passNumber
-async function deleteVisitor(passNumber) {
+async function deleteVisitor(hostIdNumber, passNumber) {
   try {
     await client.connect();
 
-    const visitor = await client.db("assignmentCondo").collection("visitor").findOne({ passNumber: passNumber });
+    // Check if the visitor exists and is assigned to the requesting host
+    const visitor = await client.db("assignmentCondo").collection("visitor").findOne({
+      passNumber: passNumber,
+      idNumberHost: hostIdNumber
+    });
 
     if (visitor) {
       // Delete the visitor
       await client.db("assignmentCondo").collection("visitor").deleteOne({ passNumber: passNumber });
     } else {
-      throw new Error("Visitor not found.");
+      throw { message: "Visitor not found or access denied.", statusCode: 404 };
     }
   } catch (error) {
     console.error("Error deleting assigned visitor:", error);
