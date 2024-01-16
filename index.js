@@ -638,49 +638,44 @@ app.post('/issuepassVisitor', async function(req, res){
  * @swagger
  * /retrievePhoneNumber:
  *   post:
- *     summary: "Retrieve Phone Number for Security Role"
- *     description: "Retrieve the phone number of a host based on provided ID number if the user role is 'security'."
- *     tags:
- *       - Security
+ *     summary: "Retrieve phone number by ID"
+ *     description: "Retrieve the phone number of a host by providing their ID number."
+ *     tags: [Security]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: body
  *         name: idNumber
- *         required: true
  *         schema:
  *           type: object
  *           properties:
  *             idNumber:
  *               type: string
+ *         required: true
+ *         description: "ID number of the host"
  *     responses:
  *       '200':
- *         description: "Successfully retrieved the phone number."
+ *         description: "Phone number retrieved successfully"
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 phoneNumber:
- *                   type: string
+ *             example: { phoneNumber: "123456789" }
  *       '401':
- *         description: "Unauthorized - Invalid or expired token."
+ *         description: "Unauthorized - Invalid or no token"
  *       '403':
- *         description: "Forbidden - User does not have the necessary permissions."
+ *         description: "Access Denied - Insufficient permissions"
  *       '404':
- *         description: "Not Found - Host with the provided ID number does not exist in the database."
- *       '400':
- *         description: "Bad Request - Invalid or no token provided."
+ *         description: "Not Found - Host does not exist"
+ *       '500':
+ *         description: "Internal Server Error"
  *     consumes:
  *       - "application/json"
  *     produces:
  *       - "application/json"
  *   securityDefinitions:
  *     bearerAuth:
- *       type: apiKey
- *       name: Authorization
- *       scheme: bearer
- *       in: header
+ *       type: "apiKey"
+ *       name: "Authorization"
+ *       in: "header"
  */
 app.post('/retrievePhoneNumber', async function (req, res) {
   var token = req.header('Authorization') ? req.header('Authorization').split(" ")[1] : null;
