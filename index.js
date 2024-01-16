@@ -32,7 +32,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 //mongoDB
 const { MongoClient} = require("mongodb");
-const uri = "mongodb+srv://fakhrul:1235@clusterfakhrul.bigkwnk.mongodb.net/?retryWrites=true&w=majority"
+const uri = "mongodb://fakhrul:1235@ac-oznfene-shard-00-00.bigkwnk.mongodb.net:27017,ac-oznfene-shard-00-01.bigkwnk.mongodb.net:27017,ac-oznfene-shard-00-02.bigkwnk.mongodb.net:27017/?ssl=true&replicaSet=atlas-mcky5q-shard-0&authSource=admin&retryWrites=true&w=majority"
 const  client = new MongoClient(uri)
 
 //bcrypt
@@ -1114,6 +1114,7 @@ async function retrievePhoneNumber(idNumber) {
     throw error; // Re-throw the error to be caught in the calling function
   }
 }
+
 async function manageRole(idNumber, role) {
   try {
     await client.connect();

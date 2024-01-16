@@ -105,10 +105,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwM
 
 POST http://localhost:3000/retrievePhoneNumber
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEzIiwicm9sZSI6InNlY3VyaXR5IiwiaWF0IjoxNzA0NTUzMDI0fQ.u-TDvcce6emXUOGCnHieQMc3sV3tOfwmyxH-hUiNKyU
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEzIiwicm9sZSI6InNlY3VyaXR5IiwiaWF0IjoxNzA1Mzc1MzI4fQ.LBnXS8fbjUXNFf6CsHXiWk_UskI5rn6rhW7kLC3lXWQ
 
 {
-  "idNumber": "987654321"
+  "idNumber": "20223112"
 }
 
 ###
