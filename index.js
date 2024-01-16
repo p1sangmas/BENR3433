@@ -633,115 +633,45 @@ app.post('/issuepassVisitor', async function(req, res){
 //   res.send(req.body)
 // })
 
-// Retrieve Phone Number
-/**
- * @swagger
- * /retrievePhoneNumber:
- *   post:
- *     summary: "Retrieve phone number by ID"
- *     description: "Retrieve the phone number of a host by providing their ID number."
- *     tags: [Security]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: body
- *         name: idNumber
- *         schema:
- *           type: object
- *           properties:
- *             idNumber:
- *               type: string
- *         required: true
- *         description: "ID number of the host"
- *     responses:
- *       '200':
- *         description: "Phone number retrieved successfully"
- *         content:
- *           application/json:
- *             example: { phoneNumber: "123456789" }
- *       '401':
- *         description: "Unauthorized - Invalid or no token"
- *       '403':
- *         description: "Access Denied - Insufficient permissions"
- *       '404':
- *         description: "Not Found - Host does not exist"
- *       '500':
- *         description: "Internal Server Error"
- *     consumes:
- *       - "application/json"
- *     produces:
- *       - "application/json"
- *   securityDefinitions:
- *     bearerAuth:
- *       type: "apiKey"
- *       name: "Authorization"
- *       in: "header"
- */
-app.post('/retrievePhoneNumber', async function (req, res) {
-  var token = req.header('Authorization') ? req.header('Authorization').split(" ")[1] : null;
-
-  if (!token) {
-    return res.status(400).send("Invalid or no token"); // Send "Invalid or no token" response
-  }
-
-  try {
-    let decoded = jwt.verify(token, privatekey);
-
-    if (decoded && decoded.role === "security") {
-      const { idNumber } = req.body;
-
-      try {
-        const phoneNumberResponse = await retrievePhoneNumber(idNumber);
-        // Send the phone number in the response body
-        res.status(200).send(phoneNumberResponse);
-      } catch (error) {
-        // Handle errors such as host not found
-        res.status(404).send(error.message);
-      }
-    } else {
-      // Send "Access Denied" response
-      res.status(403).send("Access Denied");
-    }
-  } catch (err) {
-    // Send "Unauthorized" response
-    res.status(401).send("Unauthorized");
-  }
-});
 
 /**
  * @swagger
  * /retrieveHostContact:
  *   post:
- *     summary: "Retrieve host contact number based on visitor pass number"
+ *     summary: "Retrieve Host Contact"
  *     description: "Public API for authenticated security to retrieve the contact number of the host from the given visitor pass."
  *     tags: [Security]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: body
- *         name: visitorPassNumber
+ *         name: body
+ *         description: "Visitor pass information"
+ *         required: true
  *         schema:
  *           type: object
  *           properties:
  *             visitorPassNumber:
  *               type: string
- *         required: true
- *         description: Visitor pass number to retrieve host contact
+ *         example:
+ *           visitorPassNumber: "001"
  *     responses:
  *       '200':
  *         description: "Host contact retrieved successfully"
  *         content:
  *           application/json:
  *             example:
- *               hostContactNumber: "01374463567"
+ *               phoneNumber: "01374463567"
  *       '400':
  *         description: "Invalid or no token"
  *       '401':
  *         description: "Unauthorized - Invalid token or insufficient permissions"
  *       '403':
- *         description: "Access Denied - User does not have the 'security' role"
+ *         description: "Access Denied"
  *       '404':
- *         description: "Visitor pass not found or host does not exist"
+ *         description: "Visitor or Host not found"
+ *       '500':
+ *         description: "Internal Server Error"
  *     consumes:
  *       - "application/json"
  *     produces:
@@ -768,7 +698,7 @@ app.post('/retrieveHostContact', async (req, res) => {
       try {
         const hostContactResponse = await retrieveHostContact(visitorPassNumber);
         // Send the host contact number in the response body
-        res.status(200).send(hostContactResponse);
+        res.status(200).send({ phoneNumber: hostContactResponse.phoneNumber });
       } catch (error) {
         // Handle errors such as host not found
         res.status(404).send(error.message);
@@ -806,6 +736,7 @@ async function retrieveHostContact(visitorPassNumber) {
     throw error;
   }
 }
+
 // Manage User Role
 /**
  * @swagger
@@ -1187,20 +1118,6 @@ async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, 
   }
 }
 
-
-//READ(retrieve phone number for visitor)
-async function retrievePhoneNumber(idNumber) {
-  await client.connect();
-  const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: idNumber});
-  
-  if(exist){
-    // Return the phone number in the response body
-    return { phoneNumber: exist.phoneNumber };
-  } else {
-    // Throw an error if the visitor does not exist
-    throw new Error("Host does not exist.");
-  }
-}
 
 async function manageRole(idNumber, role) {
   try {
