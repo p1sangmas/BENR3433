@@ -537,8 +537,8 @@ app.post('/viewHost', async function(req, res){
  * @swagger
  * /issuepassVisitor:
  *   post:
- *     summary: Create a visitor pass
- *     description: Create a new visitor pass (accessible to Hosts and security personnel)
+ *     summary: Issue a visitor pass
+ *     description: Issue a new visitor pass for Hosts or security personnel
  *     tags:
  *       - Host & Security 
  *     security:
@@ -599,15 +599,17 @@ app.post('/viewHost', async function(req, res){
  *                 type: string
  *                 description: Password for authentication (if applicable)
  *               idNumberHost:
- *                 type: string  
- *                 description: ID number of the host
+ *                 type: string
+ *                 description: ID number of the host (required for issuing pass)
  *     responses:
  *       '200':
- *         description: Visitor registered successfully
+ *         description: Visitor pass issued successfully
  *       '401':
  *         description: Unauthorized - Invalid or missing token
  *       '403':
- *         description: Forbidden - User does not have access to register a visitor
+ *         description: Forbidden - User does not have access to issue a visitor pass
+ *       '500':
+ *         description: Internal Server Error - An error occurred during the process
  */
 app.post('/issuepassVisitor', async function(req, res){
   const header = req.header('Authorization');
