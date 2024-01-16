@@ -708,6 +708,107 @@ app.post('/retrievePhoneNumber', async function (req, res) {
   }
 });
 
+/**
+ * @swagger
+ * /retrieveHostContact:
+ *   post:
+ *     summary: "Retrieve host contact number based on visitor pass number"
+ *     description: "Public API for authenticated security to retrieve the contact number of the host from the given visitor pass."
+ *     tags: [Security]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: body
+ *         name: visitorPassNumber
+ *         schema:
+ *           type: object
+ *           properties:
+ *             visitorPassNumber:
+ *               type: string
+ *         required: true
+ *         description: Visitor pass number to retrieve host contact
+ *     responses:
+ *       '200':
+ *         description: "Host contact retrieved successfully"
+ *         content:
+ *           application/json:
+ *             example:
+ *               hostContactNumber: "01374463567"
+ *       '400':
+ *         description: "Invalid or no token"
+ *       '401':
+ *         description: "Unauthorized - Invalid token or insufficient permissions"
+ *       '403':
+ *         description: "Access Denied - User does not have the 'security' role"
+ *       '404':
+ *         description: "Visitor pass not found or host does not exist"
+ *     consumes:
+ *       - "application/json"
+ *     produces:
+ *       - "application/json"
+ *   securityDefinitions:
+ *     bearerAuth:
+ *       type: "apiKey"
+ *       name: "Authorization"
+ *       in: "header"
+ */
+app.post('/retrieveHostContact', async (req, res) => {
+  const token = req.header('Authorization') ? req.header('Authorization').split(" ")[1] : null;
+
+  if (!token) {
+    return res.status(400).send("Invalid or no token"); // Send "Invalid or no token" response
+  }
+
+  try {
+    const decoded = jwt.verify(token, privatekey);
+
+    if (decoded && decoded.role === "security") {
+      const { visitorPassNumber } = req.body;
+
+      try {
+        const hostContactResponse = await retrieveHostContact(visitorPassNumber);
+        // Send the host contact number in the response body
+        res.status(200).send(hostContactResponse);
+      } catch (error) {
+        // Handle errors such as host not found
+        res.status(404).send(error.message);
+      }
+    } else {
+      // Send "Access Denied" response
+      res.status(403).send("Access Denied");
+    }
+  } catch (err) {
+    // Send "Unauthorized" response
+    res.status(401).send("Unauthorized");
+  }
+});
+
+async function retrieveHostContact(visitorPassNumber) {
+  try {
+    await client.connect();
+    const visitorPass = await client.db("assignmentCondo").collection("visitor").findOne({ passNumber: visitorPassNumber });
+
+    if (visitorPass) {
+      const hostContact = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: visitorPass.idNumberHost });
+
+      if (hostContact) {
+        // Return the host contact number in the response body
+        return { hostContactNumber: hostContact.phoneNumber };
+      } else {
+        // Throw an error if the host does not exist
+        throw new Error("Host does not exist.");
+      }
+    } else {
+      // Throw an error if the visitor pass does not exist
+      throw new Error("Visitor pass not found.");
+    }
+  } catch (error) {
+    // Log the actual error for debugging
+    console.error("Error retrieving host contact:", error);
+    throw error; // Re-throw the error to be caught in the calling function
+  }
+}
+
 // Manage User Role
 /**
  * @swagger
