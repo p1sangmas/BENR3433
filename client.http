@@ -126,8 +126,18 @@ Content-Type: application/json
 
 POST http://localhost:3000/retrieveHostContact
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEzIiwicm9sZSI6InNlY3VyaXR5IiwiaWF0IjoxNzA1Mzc4ODk1fQ.vYRg421AuM3Lp04EhuUrXhacRj9EkEb02zhSwhikdIY
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEzIiwicm9sZSI6InNlY3VyaXR5IiwiaWF0IjoxNzA1MzgwNzM0fQ.-kVOvtqRBiQUny1S98SZ_Jmge78dCY8yAkKI8O2IjIE
 
 {
   "visitorPassNumber": "010"
+}
+
+###
+
+DELETE http://localhost:3000/deleteVisitor
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEyIiwicm9sZSI6Ikhvc3QiLCJpYXQiOjE3MDUzODYxMTd9.sZWZTeB82jLVlXeNC2N6rEU8Pgsu3dBU6EnvZDlBilU
+
+{
+  "passNumber": "001"
 }

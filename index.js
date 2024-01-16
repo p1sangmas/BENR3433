@@ -626,13 +626,6 @@ app.post('/issuepassVisitor', async function(req, res){
   }
 });
 
-//delete Visitor
-// app.post('/deleteVisitor', async function (req, res){
-//   const {name, idNumber} = req.body
-//   await deleteVisitor(name, idNumber)
-//   res.send(req.body)
-// })
-
 
 /**
  * @swagger
@@ -840,6 +833,72 @@ app.post('/manageRole', async function (req, res){
   } else {
     console.log("Access Denied!");
     res.status(403).json({ success: false, message: "Access Denied" });
+  }
+});
+
+
+// Express route for authenticated host to delete their assigned visitor
+/**
+ * @swagger
+ * /deleteVisitor:
+ *   delete:
+ *     summary: "Delete a visitor"
+ *     description: "Authenticated Host can delete a visitor using the visitor's pass number."
+ *     tags: [Host]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               passNumber:
+ *                 type: string
+ *                 description: "Visitor's pass number to be deleted"
+ *             required:
+ *               - passNumber
+ *     responses:
+ *       '200':
+ *         description: "Visitor deleted successfully"
+ *       '401':
+ *         description: "Unauthorized - Invalid or missing token"
+ *       '403':
+ *         description: "Access Denied - User is not a Host"
+ *       '404':
+ *         description: "Visitor not found"
+ *       '500':
+ *         description: "Internal Server Error"
+ */
+app.delete('/deleteVisitor', async (req, res) => {
+  const token = req.header('Authorization') ? req.header('Authorization').split(" ")[1] : null;
+
+  if (!token) {
+    return res.status(400).send("Invalid or no token"); // Send "Invalid or no token" response
+  }
+
+  try {
+    const decoded = jwt.verify(token, privatekey);
+
+    if (decoded && decoded.role === "Host") {
+      const { passNumber } = req.body;
+
+      try {
+        await deleteVisitor(passNumber);
+        // Send success message in the response body
+        res.status(200).send("Visitor deleted successfully");
+      } catch (error) {
+        // Handle errors such as visitor not found
+        res.status(404).send(error.message);
+      }
+    } else {
+      // Send "Access Denied" response
+      res.status(403).send("Access Denied");
+    }
+  } catch (err) {
+    // Send "Unauthorized" response
+    res.status(401).send("Unauthorized");
   }
 });
 
@@ -1161,6 +1220,24 @@ async function manageRole(idNumber, role) {
   }
 }
 
+// Function to delete assigned visitor based on passNumber
+async function deleteVisitor(passNumber) {
+  try {
+    await client.connect();
+
+    const visitor = await client.db("assignmentCondo").collection("visitor").findOne({ passNumber: passNumber });
+
+    if (visitor) {
+      // Delete the visitor
+      await client.db("assignmentCondo").collection("visitor").deleteOne({ passNumber: passNumber });
+    } else {
+      throw new Error("Visitor not found.");
+    }
+  } catch (error) {
+    console.error("Error deleting assigned visitor:", error);
+    throw error;
+  }
+}
 
 
 //DELETE(delete visitor)
