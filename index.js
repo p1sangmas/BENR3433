@@ -786,29 +786,26 @@ app.post('/retrieveHostContact', async (req, res) => {
 async function retrieveHostContact(visitorPassNumber) {
   try {
     await client.connect();
-    const visitorPass = await client.db("assignmentCondo").collection("visitor").findOne({ passNumber: visitorPassNumber });
 
-    if (visitorPass) {
-      const hostContact = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: visitorPass.idNumberHost });
+    const visitor = await client.db("assignmentCondo").collection("visitor").findOne({ passNumber: visitorPassNumber });
+    
+    if (visitor) {
+      const hostIdNumber = visitor.idNumberHost;
+      const host = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: hostIdNumber });
 
-      if (hostContact) {
-        // Return the host contact number in the response body
-        return { hostContactNumber: hostContact.phoneNumber };
+      if (host) {
+        return { phoneNumber: host.phoneNumber };
       } else {
-        // Throw an error if the host does not exist
-        throw new Error("Host does not exist.");
+        throw new Error("Host not found.");
       }
     } else {
-      // Throw an error if the visitor pass does not exist
-      throw new Error("Visitor pass not found.");
+      throw new Error("Visitor not found.");
     }
   } catch (error) {
-    // Log the actual error for debugging
     console.error("Error retrieving host contact:", error);
-    throw error; // Re-throw the error to be caught in the calling function
+    throw error;
   }
 }
-
 // Manage User Role
 /**
  * @swagger
