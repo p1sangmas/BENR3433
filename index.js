@@ -44,6 +44,9 @@ var token;
 const privatekey = "PRXWGaming";
 var checkpassword;
 
+//password complexity
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+
 app.use(express.json());
 
 //retrieve Visitor info
@@ -284,9 +287,9 @@ app.post('/loginAdmin', async function (req, res) {
  * /registerHost:
  *   post:
  *     summary: Register a Host
- *     description: Register a new host if the requester has security access.
+ *     description: Register a new host (accessible to security personnel)
  *     tags:
- *       - Security
+ *       - Security 
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -298,51 +301,25 @@ app.post('/loginAdmin', async function (req, res) {
  *             properties:
  *               role:
  *                 type: string
- *                 description: Role of the host.
  *               name:
  *                 type: string
- *                 description: Name of the host.
  *               idNumber:
  *                 type: string
- *                 description: ID number of the host.
  *               email:
  *                 type: string
- *                 description: Email address of the host.
  *               password:
  *                 type: string
- *                 description: Password of the host.
  *               phoneNumber:
  *                 type: string
- *                 description: Phone number of the host.
  *     responses:
  *       '200':
- *         description: Host registered successfully.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Host registered successfully"
+ *         description: Host registered successfully
+ *       '400':
+ *         description: Bad Request - Password does not meet complexity requirements or Host already registered
+ *       '401':
+ *         description: Unauthorized - Invalid or missing token
  *       '403':
- *         description: Forbidden - User does not have the necessary permissions.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "You have no access to register a Host!"
- *       '409':
- *         description: Conflict - Host with the provided ID number already exists.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Host has already registered"
- *       '500':
- *         description: Internal Server Error - Failed to register the host due to server error.
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: "Internal Server Error!"
+ *         description: Forbidden - User does not have access to register a Host
  */
 app.post('/registerHost', async function (req, res) {
   let header = req.headers.authorization;
@@ -537,8 +514,6 @@ app.post('/viewHost', async function(req, res){
     return res.status(401).send("Invalid token"); // Send "Invalid token" instead of "Unauthorized"
   }
 });
-
-const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
 
 //issue pass visitor
 /**
@@ -1102,6 +1077,11 @@ async function registerHost(decoded, data, res) {
     if (exist) {
       res.status(400).send("Host has already registered"); // Send message in response
     } else {
+      // Validate password complexity
+      if (!PASSWORD_REGEX.test(data.password)) {
+        return res.status(400).send("Password does not meet complexity requirements");
+      }
+
       await createListing1(client, {
         role: data.role,
         name: data.name,
