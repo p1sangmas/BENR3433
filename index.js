@@ -682,7 +682,7 @@ app.post('/issuepassVisitor', async function(req, res){
  *       scheme: bearer
  *       in: header
  */
-app.post('/retrievePhoneNumber', async function (req, res){
+app.post('/retrievePhoneNumber', async function (req, res) {
   var token = req.header('Authorization') ? req.header('Authorization').split(" ")[1] : null;
 
   if (!token) {
@@ -691,23 +691,23 @@ app.post('/retrievePhoneNumber', async function (req, res){
 
   try {
     let decoded = jwt.verify(token, privatekey);
-    
+
     if (decoded && decoded.role === "security") {
       const { idNumber } = req.body;
-      
+
       try {
         const phoneNumberResponse = await retrievePhoneNumber(idNumber);
         // Send the phone number in the response body
         res.status(200).send(phoneNumberResponse);
       } catch (error) {
-        // Handle errors such as visitor not found
+        // Handle errors such as host not found
         res.status(404).send(error.message);
       }
     } else {
       // Send "Access Denied" response
       res.status(403).send("Access Denied");
     }
-  } catch(err) {
+  } catch (err) {
     // Send "Unauthorized" response
     res.status(401).send("Unauthorized");
   }
@@ -1096,19 +1096,24 @@ async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, 
 
 
 //READ(retrieve phone number for visitor)
-async function retrievePhoneNumber(idNumber){
-  await client.connect();
-  const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: idNumber});
-  
-  if(exist){
-    // Return the phone number in the response body
-    return { phoneNumber: exist.phoneNumber };
-  } else {
-    // Throw an error if the visitor does not exist
-    throw new Error("Host does not exist.");
+async function retrievePhoneNumber(idNumber) {
+  try {
+    await client.connect();
+    const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: idNumber });
+
+    if (exist) {
+      // Return the phone number in the response body
+      return { phoneNumber: exist.phoneNumber };
+    } else {
+      // Throw an error if the host does not exist
+      throw new Error("Host does not exist.");
+    }
+  } catch (error) {
+    // Log the actual error for debugging
+    console.error("Error retrieving host:", error);
+    throw error; // Re-throw the error to be caught in the calling function
   }
 }
-
 async function manageRole(idNumber, role) {
   try {
     await client.connect();
