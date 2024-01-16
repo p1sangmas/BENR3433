@@ -29,8 +29,8 @@ POST http://localhost:3000/loginAdmin
 Content-Type: application/json
 
 {
-  "idNumber": "20223119",
-  "password": "67890"
+  "idNumber": "20223110",
+  "password": "12345"
 }
 
 ###

@@ -47,6 +47,9 @@ var checkpassword;
 //password complexity
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
 
+//Max login attempts
+const MAX_LOGIN_ATTEMPTS = 5; // Maximum allowed login attempts
+
 app.use(express.json());
 
 //retrieve Visitor info
@@ -1001,48 +1004,56 @@ async function viewHost(idNumber, role, res){ // Add res as a parameter
 //READ(login as Host)
 async function loginHost(res, idNumber, hashed) {
   await client.connect();
-  const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: idNumber });
-  
-  if (exist) {
-    // Check if the account is locked
-    if (exist.accountLocked) {
-      return res.status(401).send("Account is locked. Contact administrator.");
-    }
+  const hostCollection = client.db("assignmentCondo").collection("owner");
 
-    const passwordMatch = await bcrypt.compare(hashed, exist.password);
-    if (passwordMatch) {
-      console.log("Login Success!\nRole: " + exist.role);
-      logs(idNumber, exist.name, exist.role);
-      const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
-      res.send("Token: " + token);
-    } else {
-      // Increment failed login attempts
-      await client.db("assignmentCondo").collection("owner").updateOne(
-        { idNumber: idNumber },
-        { $inc: { failedLoginAttempts: 1 } }
-      );
+  try {
+    const hostUser = await hostCollection.findOne({ idNumber: idNumber });
 
-      // Check if the account should be locked
-      if (exist.failedLoginAttempts + 1 >= 5) {
-        await client.db("assignmentCondo").collection("owner").updateOne(
-          { idNumber: idNumber },
-          { $set: { accountLocked: true } }
-        );
-        return res.status(401).send("Account is locked. Contact administrator.");
+    if (hostUser) {
+      const { loginAttempts } = hostUser;
+
+      if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+        // Account is locked due to too many failed attempts
+        res.status(401).json({
+          error: "Account locked. Please contact support for assistance."
+        });
+        return;
       }
 
-      // Send password mismatch error in response
-      res.status(401).send("Wrong password!");
+      const passwordMatch = await bcrypt.compare(hostUser.password, hashed);
+
+      if (passwordMatch) {
+        // Reset login attempts on successful login
+        await hostCollection.updateOne({ idNumber: idNumber }, { $set: { loginAttempts: 0 } });
+
+        console.log("Login Success!\nRole: " + hostUser.role);
+        logs(idNumber, hostUser.name, hostUser.role);
+        const token = jwt.sign({ idNumber: idNumber, role: hostUser.role }, privatekey);
+        res.status(200).json({ token: token });
+      } else {
+        // Update login attempts on failed login
+        await hostCollection.updateOne(
+          { idNumber: idNumber },
+          {
+            $inc: { loginAttempts: 1 }
+          }
+        );
+
+        // Send password mismatch error in response
+        res.status(401).send("Wrong password!");
+      }
+    } else {
+      // Send username not found error in response
+      res.status(404).send("Username not exist!");
     }
-  } else {
-    // Send username not found error in response
-    res.status(404).send("Username not exist!");
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).send("Internal Server Error"); // Handle any unexpected errors.
   }
 }
 
 
 // READ (login as Security)
-const MAX_LOGIN_ATTEMPTS = 5; // Maximum allowed login attempts
 
 async function loginSecurity(res, idNumber, hashed) {
   await client.connect();
