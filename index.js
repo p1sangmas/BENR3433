@@ -145,8 +145,8 @@ app.post('/loginHost', async function (req, res) {
  * @swagger
  * /loginSecurity:
  *   post:
- *     summary: Login as Security
- *     description: Authenticate and login as a security personnel.
+ *     summary: Security user login
+ *     description: Authenticate a security user
  *     tags:
  *       - Security
  *     requestBody:
@@ -158,24 +158,45 @@ app.post('/loginHost', async function (req, res) {
  *             properties:
  *               idNumber:
  *                 type: string
- *                 description: The unique ID number of the security personnel.
+ *                 description: The ID number of the security user
  *               password:
  *                 type: string
- *                 description: The password associated with the security personnel's account.
+ *                 description: The password of the security user
  *     responses:
  *       '200':
- *         description: Successfully authenticated. Returns a JWT token.
+ *         description: Successful login
  *         content:
- *           text/plain:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   description: Authentication token for the security user
+ *       '401':
+ *         description: Unauthorized - Wrong password or account locked
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message indicating unauthorized access
+ *       '404':
+ *         description: Not Found - Security user not found
+ *         content:
+ *           application/json:
  *             schema:
  *               type: string
- *               example: "Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZEN..."
- *       '401':
- *         description: Unauthorized - Incorrect password.
- *       '404':
- *         description: Not Found - Security personnel with the provided ID number does not exist.
+ *               description: Error message indicating the security user was not found
  *       '500':
- *         description: Internal Server Error - Failed to authenticate due to server error.
+ *         description: Internal Server Error - Unexpected error during login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               description: Error message indicating an unexpected server error
  */
 app.post('/loginSecurity', async function (req, res) {
   let { idNumber, password } = req.body;
@@ -186,78 +207,78 @@ app.post('/loginSecurity', async function (req, res) {
 //login as Admin
 /**
  * @swagger
-* /loginAdmin:
-*   post:
-  *     summary: Admin Login
-  *     description: Authenticate as an administrator and receive a JWT token.
-  *     tags: [Admin]
-  *     requestBody:
-  *       required: true
-  *       content:
-  *         application/json:
-  *           schema:
-  *             type: object
-  *             properties:
-  *               idNumber:
-  *                 type: string
-  *               password:
-  *                 type: string
-  *     responses:
-  *       '200':
-  *         description: Login successful.
-  *         content:
-  *           application/json:
-  *             schema:
-  *               type: object
-  *               properties:
-  *                 success:
-  *                   type: boolean
-  *                   example: true
-  *                 message:
-  *                   type: string
-  *                   example: Login Success!
-  *                 token:
-  *                   type: string
-  *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-  *       '401':
-  *         description: Unauthorized - Wrong password.
-  *         content:
-  *           application/json:
-  *             schema:
-  *               type: object
-  *               properties:
-  *                 success:
-  *                   type: boolean
-  *                   example: false
-  *                 message:
-  *                   type: string
-  *                   example: Wrong password!
-  *       '404':
-  *         description: Not Found - Username not exist.
-  *         content:
-  *           application/json:
-  *             schema:
-  *               type: object
-  *               properties:
-  *                 success:
-  *                   type: boolean
-  *                   example: false
-  *                 message:
-  *                   type: string
-  *                   example: Username not exist!
-  *       '500':
-  *         description: Internal server error occurred.
-  *         content:
-  *           application/json:
-  *             schema:
-  *               type: object
-  *               properties:
-  *                 success:
-  *                   type: boolean
-  *                   example: false
-  *                 message:
-  *                   type: string
-  *                   example: An error occurred.
+ * /loginAdmin:
+ *   post:
+ *     summary: Admin Login
+ *     description: Authenticate as an administrator and receive a JWT token.
+ *     tags: [Admin]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               idNumber:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Login successful.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Login Success!
+ *                 token:
+ *                   type: string
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *       '401':
+ *         description: Unauthorized - Wrong password.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Wrong password!
+ *       '404':
+ *         description: Not Found - Username not exist.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Username not exist!
+ *       '500':
+ *         description: Internal server error occurred.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: An error occurred.
  */
 app.post('/loginAdmin', async function (req, res) {
   let { idNumber, password } = req.body;
@@ -1021,24 +1042,55 @@ async function loginHost(res, idNumber, hashed) {
 
 
 // READ (login as Security)
+const MAX_LOGIN_ATTEMPTS = 5; // Maximum allowed login attempts
+
 async function loginSecurity(res, idNumber, hashed) {
   await client.connect();
-  const exist = await client.db("assignmentCondo").collection("security").findOne({ idNumber: idNumber });
-  
-  if (exist) {
-    const passwordMatch = await bcrypt.compare(exist.password, hashed);
-    if (passwordMatch) {
-      console.log("Login Success!\nRole: " + exist.role);
-      logs(idNumber, exist.name, exist.role);
-      const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
-      res.send("Token: " + token);
+  const securityCollection = client.db("assignmentCondo").collection("security");
+
+  try {
+    const securityUser = await securityCollection.findOne({ idNumber: idNumber });
+
+    if (securityUser) {
+      const { loginAttempts } = securityUser;
+
+      if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+        // Account is locked due to too many failed attempts
+        res.status(401).json({
+          error: "Account locked. Please contact support for assistance."
+        });
+        return;
+      }
+
+      const passwordMatch = await bcrypt.compare(securityUser.password, hashed);
+
+      if (passwordMatch) {
+        // Reset login attempts on successful login
+        await securityCollection.updateOne({ idNumber: idNumber }, { $set: { loginAttempts: 0 } });
+
+        console.log("Login Success!\nRole: " + securityUser.role);
+        logs(idNumber, securityUser.name, securityUser.role);
+        const token = jwt.sign({ idNumber: idNumber, role: securityUser.role }, privatekey);
+        res.status(200).json({ token: token });
+      } else {
+        // Update login attempts on failed login
+        await securityCollection.updateOne(
+          { idNumber: idNumber },
+          {
+            $inc: { loginAttempts: 1 }
+          }
+        );
+
+        // Send password mismatch error in response
+        res.status(401).send("Wrong password!");
+      }
     } else {
-      // Send password mismatch error in response
-      res.status(401).send("Wrong password!");
+      // Send username not found error in response
+      res.status(404).send("Username not exist!");
     }
-  } else {
-    // Send username not found error in response
-    res.status(404).send("Username not exist!");
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).send("Internal Server Error"); // Handle any unexpected errors.
   }
 }
 
@@ -1046,17 +1098,23 @@ async function loginAdmin(res, idNumber, hashed) {
   await client.connect();
 
   try {
-    const exist = await client.db("assignmentCondo").collection("admin").findOne({ idNumber: idNumber });
+    const adminCollection = client.db("assignmentCondo").collection("admin");
+    const exist = await adminCollection.findOne({ idNumber: idNumber });
 
     if (exist) {
       const passwordMatch = await bcrypt.compare(exist.password, hashed);
 
       if (passwordMatch) {
+        // Reset login attempts upon successful login
+        await adminCollection.updateOne({ idNumber: idNumber }, { $set: { loginAttempts: 0 } });
+
         console.log("Login Success!\nRole: " + exist.role);
         logs(idNumber, exist.name, exist.role);
         const token = jwt.sign({ idNumber: idNumber, role: exist.role }, privatekey);
         res.status(200).json({ success: true, message: "Login Success!", token: token });
       } else {
+        // Increment login attempts
+        await adminCollection.updateOne({ idNumber: idNumber }, { $inc: { loginAttempts: 1 } });
         console.log("Wrong password!");
         res.status(401).json({ success: false, message: "Wrong password!" });
       }
