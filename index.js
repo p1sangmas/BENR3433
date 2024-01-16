@@ -1098,14 +1098,14 @@ async function issuepassVisitor(newrole, newname, newidNumber, newdocumentType, 
 //READ(retrieve phone number for visitor)
 async function retrievePhoneNumber(idNumber){
   await client.connect();
-  const exist = await client.db("assignmentCondo").collection("host").findOne({idNumber: idNumber});
+  const exist = await client.db("assignmentCondo").collection("owner").findOne({idNumber: idNumber});
   
   if(exist){
     // Return the phone number in the response body
     return { phoneNumber: exist.TelephoneNumber };
   } else {
     // Throw an error if the visitor does not exist
-    throw new Error("Visitor does not exist.");
+    throw new Error("Host does not exist.");
   }
 }
 
