@@ -355,10 +355,10 @@ app.post('/registerHost', async function (req, res) {
  * @swagger
  * /registertestHost:
  *   post:
- *     summary: Register a test host
- *     description: Endpoint to register a test host. Checks if the host with the provided ID number already exists and registers if not.
+ *     summary: Register a test Host
+ *     description: Register a test Host with the provided information.
  *     tags:
- *       - Host & Security & Admin
+ *       - Host
  *     requestBody:
  *       required: true
  *       content:
@@ -366,49 +366,71 @@ app.post('/registerHost', async function (req, res) {
  *           schema:
  *             type: object
  *             properties:
- *               role:
+ *               newrole:
  *                 type: string
- *               name:
+ *               newname:
  *                 type: string
- *               idNumber:
+ *               newidNumber:
  *                 type: string
- *               email:
+ *               newemail:
  *                 type: string
- *               password:
+ *               newpassword:
  *                 type: string
- *               phoneNumber:
+ *               newphoneNumber:
  *                 type: string
  *     responses:
- *       200:
+ *       '200':
  *         description: Host registered successfully.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 message:
  *                   type: string
  *                   example: Host registered successfully
- *       400:
- *         description: Host with the provided ID number already exists.
+ *       '400':
+ *         description: Bad Request - Fields are missing or password complexity requirements not met.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: All fields are required or Password does not meet complexity requirements
+ *       '409':
+ *         description: Conflict - Host with the provided ID number already registered.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
  *                 message:
  *                   type: string
  *                   example: Host has already registered
- *       500:
+ *       '500':
  *         description: Internal server error occurred.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
  *                 message:
  *                   type: string
- *                   example: Internal server error occurred.
+ *                   example: An error occurred.
  */
 app.post('/registertestHost', async function (req, res) {
   const data = req.body;
@@ -1182,6 +1204,16 @@ async function registerHost(decoded, data, res) {
 
 //CREATE(register Host)
 async function registertestHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber, res) {
+  // Input validation
+  if (!newrole || !newname || !newidNumber || !newemail || !newpassword || !newphoneNumber) {
+    return res.status(400).send('All fields are required'); // Send a 400 Bad Request status if any field is missing
+  }
+
+  // Password complexity rules
+  if (!PASSWORD_REGEX.test(newpassword)) {
+    return res.status(400).send('Password does not meet complexity requirements');
+  }
+
   await client.connect();
   const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: newidNumber });
 

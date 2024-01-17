@@ -60,20 +60,20 @@ Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEzIiwicm9sZSI6InNlY3VyaXR5IiwiaWF0IjoxNzA1NDEyNDM4fQ.1sWqfW-ADc5zxFw0C7bklKiq8s7QojylYLOZu0IkBuE
 {
   "role": "visitor",
-  "name": "Lee ", 
-  "idNumber": "lee123",
+  "name": "Baran", 
+  "idNumber": "baran123",
   "documentType": "Mykad",
   "gender": "Male",
-  "birthDate": "2008-12-15",
+  "birthDate": "2003-03-10",
   "age": "51",
   "documentExpiry": "2028-04-03",
   "company": "Kepala",
-  "TelephoneNumber": "0294727344",
-  "vehicleNumber": "JNI8343",
+  "TelephoneNumber": "019236451",
+  "vehicleNumber": "YHB678",
   "category": "Friend",
-  "ethnicity": "Korean",
+  "ethnicity": "Indian",
   "photoAttributes": "Photo Attributes",
-  "passNumber": "096",
+  "passNumber": "095",
   "password": "1234",
   "idNumberHost": "20223112"
 }
@@ -86,11 +86,25 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwM
 
 {
   "role": "Host",
-  "name": "Cheng",
-  "idNumber": "cheng123",
-  "email": "cheng@email.com",
-  "password": "cheng123",
-  "phoneNumber": "028422335"
+  "name": "",
+  "idNumber": "seo123",
+  "email": "seo@email.com",
+  "password": "#Seo123",
+  "phoneNumber": "0218413531"
+}
+
+###
+
+POST http://localhost:3000/registertestHost
+Content-Type: application/json
+
+{
+  "role": "Host",
+  "name": "",
+  "idNumber": "seo123",
+  "email": "seo@email.com",
+  "password": "#Seo123",
+  "phoneNumber": "0218413531"
 }
 
 ###
