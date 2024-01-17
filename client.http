@@ -86,10 +86,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwM
 
 {
   "role": "Host",
-  "name": "",
+  "name": "Seo",
   "idNumber": "seo123",
   "email": "seo@email.com",
-  "password": "#Seo123",
+  "password": "#Seo12345",
   "phoneNumber": "0218413531"
 }
 
@@ -100,10 +100,10 @@ Content-Type: application/json
 
 {
   "role": "Host",
-  "name": "",
+  "name": "Seo",
   "idNumber": "seo123",
   "email": "seo@email.com",
-  "password": "#Seo123",
+  "password": "3",
   "phoneNumber": "0218413531"
 }
 

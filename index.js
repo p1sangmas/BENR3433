@@ -1177,16 +1177,23 @@ async function loginAdmin(res, idNumber, hashed) {
 async function registerHost(decoded, data, res) {
   if (decoded && decoded.role === "security") {
     await client.connect();
+
+    // Use the same variable names consistently
+    if (!data.role || !data.name || !data.idNumber || !data.email || !data.password || !data.phoneNumber) {
+      return res.status(400).send('All fields are required'); // Send a 400 Bad Request status if any field is missing
+    }
+
+    // Validate password complexity
+    if (!PASSWORD_REGEX.test(data.password)) {
+      return res.status(400).send("Password does not meet complexity requirements");
+    }
+
     const exist = await client.db("assignmentCondo").collection("owner").findOne({ idNumber: data.idNumber });
 
     if (exist) {
-      res.status(400).send("Host has already registered"); // Send message in response
+      // Host already registered, return a conflict status
+      return res.status(409).send("Host has already registered");
     } else {
-      // Validate password complexity
-      if (!PASSWORD_REGEX.test(data.password)) {
-        return res.status(400).send("Password does not meet complexity requirements");
-      }
-
       await createListing1(client, {
         role: data.role,
         name: data.name,
