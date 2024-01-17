@@ -1210,6 +1210,7 @@ async function registerHost(decoded, data, res) {
 }
 
 
+
 //CREATE(register Host)
 async function registertestHost(newrole, newname, newidNumber, newemail, newpassword, newphoneNumber, res) {
   // Input validation
